@@ -1,20 +1,28 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ShoppingList } from '../../types'
+import { useRouter } from 'vue-router'
+import type { ShoppingList, AccentColor } from '../../types'
 
 const props = defineProps<{
   list: ShoppingList
   index: number
 }>()
 
+const router = useRouter()
+
 const progress = computed(() =>
-  props.list.totalItems > 0
-    ? Math.round((props.list.checkedItems / props.list.totalItems) * 100)
+  props.list.itemCount > 0
+    ? Math.round((props.list.checkedCount / props.list.itemCount) * 100)
     : 0
 )
 
+const accentColor = computed<AccentColor>(() => {
+  const colors: AccentColor[] = ['teal', 'green', 'sapphire']
+  return colors[props.index % 3] ?? 'teal'
+})
+
 const accentClasses = computed(() => {
-  const map = {
+  const map: Record<AccentColor, { border: string; progress: string; glow: string; badge: string }> = {
     green: {
       border: 'border-l-ctp-green',
       progress: 'bg-ctp-green',
@@ -34,10 +42,18 @@ const accentClasses = computed(() => {
       badge: 'bg-ctp-sapphire/10 text-ctp-sapphire',
     },
   }
-  return map[props.list.accentColor]
+  return map[accentColor.value]
 })
 
-const timeAgo = computed(() => props.list.updatedAt)
+const timeAgo = computed(() => {
+  const diff = Date.now() - new Date(props.list.updatedAt).getTime()
+  const mins = Math.floor(diff / 60_000)
+  if (mins < 1) return 'gerade eben'
+  if (mins < 60) return `vor ${mins}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `vor ${hours}h`
+  return `vor ${Math.floor(hours / 24)}d`
+})
 </script>
 
 <template>
@@ -53,6 +69,7 @@ const timeAgo = computed(() => props.list.updatedAt)
     "
     :class="[accentClasses.border, accentClasses.glow]"
     :style="{ animationDelay: `${index * 60}ms` }"
+    @click="router.push({ name: 'list-detail', params: { id: list.id } })"
   >
     <div class="flex items-start justify-between gap-3">
       <!-- Left: emoji + info -->
@@ -65,33 +82,17 @@ const timeAgo = computed(() => props.list.updatedAt)
           </h3>
 
           <div class="flex items-center gap-2 mt-1.5 text-xs text-ctp-overlay1">
-            <span>{{ list.checkedItems }}/{{ list.totalItems }} items</span>
+            <span>{{ list.checkedCount }}/{{ list.itemCount }} items</span>
             <span class="w-0.5 h-0.5 rounded-full bg-ctp-overlay0" />
             <span>{{ timeAgo }}</span>
           </div>
 
-          <!-- Participants (shared lists) -->
-          <div v-if="list.shared && list.participants.length" class="flex items-center gap-1.5 mt-2.5">
-            <div class="flex -space-x-1.5">
-              <div
-                v-for="p in list.participants.slice(0, 3)"
-                :key="p.id"
-                class="w-5 h-5 rounded-full border-2 border-ctp-surface0 flex items-center justify-center text-[8px] font-bold"
-                :class="p.online ? 'bg-ctp-teal/20 text-ctp-teal' : 'bg-ctp-surface1 text-ctp-overlay0'"
-                :title="p.name"
-              >
-                {{ p.initials }}
-              </div>
-              <div
-                v-if="list.participants.length > 3"
-                class="w-5 h-5 rounded-full border-2 border-ctp-surface0 bg-ctp-surface1 flex items-center justify-center text-[8px] font-medium text-ctp-overlay0"
-              >
-                +{{ list.participants.length - 3 }}
-              </div>
-            </div>
-            <span class="text-[10px] text-ctp-overlay0">
-              {{ list.participants.filter(p => p.online).length }} online
-            </span>
+          <!-- Participant count chip for shared lists -->
+          <div v-if="list.participantCount > 1" class="flex items-center gap-1 mt-2">
+            <svg class="w-3 h-3 text-ctp-overlay0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
+            </svg>
+            <span class="text-[10px] text-ctp-overlay0">{{ list.participantCount }} Teilnehmer</span>
           </div>
         </div>
       </div>
