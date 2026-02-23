@@ -2,6 +2,7 @@ import { ref, onUnmounted } from 'vue'
 import { connectWebSocket, subscribe, send, isConnected } from '../services/websocket'
 import { useItemsStore } from '../stores/items'
 import { usePresenceStore } from '../stores/presence'
+import { getDeviceId } from '../services/device'
 import type { CrdtOperation } from '../crdt/types'
 import type { Item } from '../types'
 
@@ -30,10 +31,13 @@ export function useListSync() {
 
     const itemsStore = useItemsStore()
     const presenceStore = usePresenceStore()
+    const myDeviceId = await getDeviceId()
 
     // Subscribe to CRDT operation stream
     const unsubOps = subscribe(`/topic/list/${listId}`, (payload) => {
       const op = payload as CrdtOperation
+      // Skip ops originating from this device — already applied locally via HTTP response
+      if (op.deviceId === myDeviceId) return
       applyOp(listId, op, itemsStore)
     })
 

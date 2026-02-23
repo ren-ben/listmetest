@@ -10,6 +10,7 @@ export type OperationType =
 export interface CrdtOperation {
   id: string            // UUID, client-generated
   listId: string
+  deviceId: string
   operationType: OperationType
   payload: Record<string, unknown>
   vectorClock: VectorClockMap
