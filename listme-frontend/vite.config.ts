@@ -12,8 +12,12 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      // Inline the service worker so Vite bundles it correctly
       injectRegister: 'auto',
+      // Enable SW in dev so the install prompt fires during development
+      devOptions: {
+        enabled: true,
+        type: 'module',
+      },
       workbox: {
         // Cache all static app-shell assets (JS, CSS, HTML, fonts, icons)
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
@@ -45,6 +49,9 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         icons: [
+          { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
           { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' },
         ],
       },
