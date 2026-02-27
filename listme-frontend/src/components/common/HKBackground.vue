@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Teleport } from 'vue'
 import { useThemeStore } from '../../stores/theme'
 
