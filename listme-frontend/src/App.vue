@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import AppHeader from './components/common/AppHeader.vue'
 import BottomNav from './components/common/BottomNav.vue'
 import { useOffline } from './composables/useOffline'
 import { useSyncQueue } from './composables/useSyncQueue'
 
+const route = useRoute()
 const { isOnline } = useOffline()
 
 // Flush queued ops whenever connectivity returns
 useSyncQueue()
+
+const hideChrome = computed(() => !!route.meta.hideChrome)
 
 // Show/hide the global offline banner
 const showOfflineBanner = ref(!isOnline.value)
@@ -31,12 +35,12 @@ const offlineBannerClass = computed(() =>
 
 <template>
   <div class="min-h-dvh bg-ctp-base text-ctp-text">
-    <AppHeader />
+    <AppHeader v-if="!hideChrome" />
 
     <!-- Global offline / back-online banner (home + other non-list pages) -->
     <Transition name="banner">
       <div
-        v-if="showOfflineBanner"
+        v-if="showOfflineBanner && !hideChrome"
         class="fixed top-14 left-0 right-0 z-50 flex items-center justify-center gap-2 py-2 px-4 text-xs font-medium"
         :class="offlineBannerClass"
       >
@@ -57,7 +61,7 @@ const offlineBannerClass = computed(() =>
       </RouterView>
     </main>
 
-    <BottomNav />
+    <BottomNav v-if="!hideChrome" />
   </div>
 </template>
 

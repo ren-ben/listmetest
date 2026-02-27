@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-const active = ref('home')
+const router = useRouter()
+const route = useRoute()
 
 const tabs = [
-  { id: 'home', label: 'Lists', icon: 'lists' },
-  { id: 'favorites', label: 'Favorites', icon: 'heart' },
-  { id: 'friends', label: 'Friends', icon: 'users' },
-  { id: 'settings', label: 'Settings', icon: 'settings' },
+  { id: 'home', label: 'Listen', icon: 'lists', to: '/' },
+  { id: 'favorites', label: 'Favoriten', icon: 'heart', to: null },
+  { id: 'friends', label: 'Freunde', icon: 'users', to: null },
+  { id: 'settings', label: 'Einstellungen', icon: 'settings', to: null },
 ] as const
+
+const active = computed(() => route.name === 'home' ? 'home' : null)
+
+function onTab(tab: typeof tabs[number]) {
+  if (tab.to) router.push(tab.to)
+}
 </script>
 
 <template>
@@ -20,11 +28,14 @@ const tabs = [
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        class="pressable flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-colors duration-200 min-w-[64px]"
+        class="pressable flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-colors duration-200 min-w-[64px] relative"
         :class="active === tab.id
           ? 'text-ctp-teal'
-          : 'text-ctp-overlay0 hover:text-ctp-subtext0'"
-        @click="active = tab.id"
+          : tab.to
+            ? 'text-ctp-overlay0 hover:text-ctp-subtext0'
+            : 'text-ctp-surface2 cursor-not-allowed'"
+        :title="!tab.to ? 'Demnächst verfügbar' : undefined"
+        @click="onTab(tab)"
       >
         <!-- Lists icon -->
         <svg v-if="tab.icon === 'lists'" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

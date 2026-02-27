@@ -16,16 +16,19 @@ const router = createRouter({
       path: '/list/:id',
       name: 'list-detail',
       component: ListDetailView,
+      meta: { hideChrome: true },
     },
     {
       path: '/s/:token',
       name: 'join-list',
       component: JoinListView,
+      meta: { hideChrome: true },
     },
     {
       path: '/sync/:token',
       name: 'sync-apply',
       component: SyncApplyView,
+      meta: { hideChrome: true },
     },
   ],
 })
