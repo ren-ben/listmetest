@@ -10,6 +10,8 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
 
     List<Item> findByListIdOrderByPosition(UUID listId);
 
+    List<Item> findByListIdAndNameContainingIgnoreCaseOrderByPosition(UUID listId, String name);
+
     int countByListId(UUID listId);
 
     int countByListIdAndCheckedTrue(UUID listId);

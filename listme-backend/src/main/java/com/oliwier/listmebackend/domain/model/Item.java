@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,6 +39,12 @@ public class Item {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_device", nullable = false, updatable = false)
     private Device createdByDevice;
+
+    @Column(name = "quantity", precision = 10, scale = 2)
+    private BigDecimal quantity;
+
+    @Column(name = "quantity_unit", length = 20)
+    private String quantityUnit;
 
     @ManyToMany
     @JoinTable(

@@ -21,4 +21,8 @@ export const listService = {
   delete(listId: string): Promise<void> {
     return api.delete(`/lists/${listId}`).then(() => undefined)
   },
+
+  duplicate(listId: string): Promise<ShoppingList> {
+    return api.post<ShoppingList>(`/lists/${listId}/duplicate`).then(r => r.data)
+  },
 }

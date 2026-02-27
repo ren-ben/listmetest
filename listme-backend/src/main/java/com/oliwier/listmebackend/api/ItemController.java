@@ -24,8 +24,10 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<ItemResponse> getItems(@PathVariable UUID listId, @CurrentDevice Device device) {
-        return itemService.getByList(listId, device).stream().map(ItemResponse::from).toList();
+    public List<ItemResponse> getItems(@PathVariable UUID listId,
+                                       @CurrentDevice Device device,
+                                       @RequestParam(required = false) String q) {
+        return itemService.getByList(listId, device, q).stream().map(ItemResponse::from).toList();
     }
 
     @PostMapping

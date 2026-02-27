@@ -16,7 +16,7 @@
       </svg>
     </button>
 
-    <!-- Name + category -->
+    <!-- Name + category + quantity + labels -->
     <div class="flex-1 min-w-0">
       <span
         class="text-sm font-medium text-ctp-text truncate block transition-all duration-200"
@@ -24,14 +24,20 @@
       >
         {{ item.name }}
       </span>
-      <span
-        v-if="item.categoryName"
-        class="inline-block mt-0.5 text-xs px-1.5 py-0.5 rounded-md font-medium"
-        :style="item.categoryColor ? { background: item.categoryColor + '33', color: item.categoryColor } : {}"
-        :class="!item.categoryColor ? 'bg-ctp-surface1 text-ctp-subtext0' : ''"
-      >
-        {{ item.categoryName }}
-      </span>
+      <div v-if="item.categoryName || item.quantity || item.labels?.length" class="flex items-center flex-wrap gap-1 mt-0.5">
+        <span
+          v-if="item.categoryName"
+          class="text-xs px-1.5 py-0.5 rounded-md font-medium"
+          :style="item.categoryColor ? { background: item.categoryColor + '33', color: item.categoryColor } : {}"
+          :class="!item.categoryColor ? 'bg-ctp-surface1 text-ctp-subtext0' : ''"
+        >
+          {{ item.categoryName }}
+        </span>
+        <span v-if="item.quantity" class="text-xs text-ctp-overlay1">
+          {{ item.quantity }}{{ item.quantityUnit ? ' ' + item.quantityUnit : '' }}
+        </span>
+        <LabelTag v-for="label in item.labels" :key="label.id" :label="label" />
+      </div>
     </div>
 
     <!-- Edit / Delete actions -->
@@ -58,6 +64,7 @@
 
 <script setup lang="ts">
 import type { Item } from '../../types'
+import LabelTag from './LabelTag.vue'
 
 const props = defineProps<{ item: Item }>()
 const emit = defineEmits<{

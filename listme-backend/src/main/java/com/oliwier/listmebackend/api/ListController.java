@@ -2,10 +2,13 @@ package com.oliwier.listmebackend.api;
 
 import com.oliwier.listmebackend.api.dto.CreateListRequest;
 import com.oliwier.listmebackend.api.dto.ListResponse;
+import com.oliwier.listmebackend.api.dto.ParticipantResponse;
 import com.oliwier.listmebackend.api.dto.UpdateListRequest;
 import com.oliwier.listmebackend.domain.model.Device;
+import com.oliwier.listmebackend.domain.model.Item;
 import com.oliwier.listmebackend.domain.model.ListDevice;
 import com.oliwier.listmebackend.domain.model.ShoppingList;
+import com.oliwier.listmebackend.domain.repository.ItemRepository;
 import com.oliwier.listmebackend.domain.repository.ListDeviceRepository;
 import com.oliwier.listmebackend.domain.repository.ShoppingListRepository;
 import com.oliwier.listmebackend.identity.CurrentDevice;
@@ -27,6 +30,7 @@ public class ListController {
 
     private final ShoppingListRepository listRepository;
     private final ListDeviceRepository listDeviceRepository;
+    private final ItemRepository itemRepository;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -67,6 +71,40 @@ public class ListController {
         list.setName(req.name());
         if (req.emoji() != null) list.setEmoji(req.emoji());
         return ListResponse.from(listRepository.save(list));
+    }
+
+    @GetMapping("/{listId}/participants")
+    public List<ParticipantResponse> getParticipants(@PathVariable UUID listId, @CurrentDevice Device device) {
+        requireAccess(listId, device);
+        return listDeviceRepository.findByListId(listId).stream()
+                .map(ld -> new ParticipantResponse(ld.getDevice().getId(), ld.getRole(), ld.getJoinedAt()))
+                .toList();
+    }
+
+    @PostMapping("/{listId}/duplicate")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Transactional
+    public ListResponse duplicate(@PathVariable UUID listId, @CurrentDevice Device device) {
+        ShoppingList orig = requireAccess(listId, device);
+
+        ShoppingList copy = new ShoppingList();
+        copy.setId(UUID.randomUUID());
+        copy.setName(orig.getName() + " (Kopie)");
+        copy.setEmoji(orig.getEmoji());
+        copy.setCreatedByDevice(device);
+        copy.getListDevices().add(new ListDevice(copy, device, "owner"));
+
+        orig.getItems().forEach(origItem -> {
+            Item item = new Item();
+            item.setList(copy);
+            item.setName(origItem.getName());
+            item.setPosition(origItem.getPosition());
+            item.setChecked(false);
+            item.setCreatedByDevice(device);
+            copy.getItems().add(item);
+        });
+
+        return ListResponse.from(listRepository.save(copy));
     }
 
     @DeleteMapping("/{listId}")

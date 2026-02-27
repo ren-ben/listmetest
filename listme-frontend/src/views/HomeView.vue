@@ -5,9 +5,11 @@ import ListSection from '../components/list/ListSection.vue'
 import ListCard from '../components/list/ListCard.vue'
 import FloatingActionButton from '../components/common/FloatingActionButton.vue'
 import AddListModal from '../components/common/AddListModal.vue'
+import LinkDevicesModal from '../components/list/LinkDevicesModal.vue'
 
 const listsStore = useListsStore()
 const showAddModal = ref(false)
+const showLinkModal = ref(false)
 
 onMounted(() => listsStore.fetchAll())
 
@@ -24,14 +26,26 @@ async function handleCreate(name: string, emoji: string) {
 <template>
   <div class="pt-16 pb-24 px-5 max-w-lg mx-auto">
     <!-- Greeting -->
-    <div class="mt-4 mb-6 animate-fade-up">
-      <p class="text-ctp-overlay1 text-sm">Willkommen zurück</p>
-      <h2 class="text-2xl font-bold text-ctp-text mt-0.5">
-        Deine Listen
-        <span class="text-ctp-overlay0 font-normal text-base ml-1">
-          ({{ lists.length }})
-        </span>
-      </h2>
+    <div class="mt-4 mb-6 animate-fade-up flex items-start justify-between">
+      <div>
+        <p class="text-ctp-overlay1 text-sm">Willkommen zurück</p>
+        <h2 class="text-2xl font-bold text-ctp-text mt-0.5">
+          Deine Listen
+          <span class="text-ctp-overlay0 font-normal text-base ml-1">
+            ({{ lists.length }})
+          </span>
+        </h2>
+      </div>
+      <!-- Link devices button -->
+      <button
+        @click="showLinkModal = true"
+        class="mt-1 p-2 rounded-xl text-ctp-subtext0 hover:text-ctp-teal hover:bg-ctp-surface0 transition-colors"
+        title="Geräte verknüpfen"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      </button>
     </div>
 
     <!-- Quick stats -->
@@ -86,5 +100,8 @@ async function handleCreate(name: string, emoji: string) {
       @close="showAddModal = false"
       @create="handleCreate"
     />
+
+    <!-- Link devices modal -->
+    <LinkDevicesModal v-model="showLinkModal" />
   </div>
 </template>

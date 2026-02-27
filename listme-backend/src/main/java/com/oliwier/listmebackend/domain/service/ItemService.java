@@ -10,6 +10,7 @@ import com.oliwier.listmebackend.domain.model.Item;
 import com.oliwier.listmebackend.domain.model.ShoppingList;
 import com.oliwier.listmebackend.domain.repository.CategoryRepository;
 import com.oliwier.listmebackend.domain.repository.ItemRepository;
+import com.oliwier.listmebackend.domain.repository.LabelRepository;
 import com.oliwier.listmebackend.domain.repository.ListDeviceRepository;
 import com.oliwier.listmebackend.domain.repository.ShoppingListRepository;
 import com.oliwier.listmebackend.websocket.ListSyncBroadcaster;
@@ -33,12 +34,16 @@ public class ItemService {
     private final ShoppingListRepository listRepository;
     private final ListDeviceRepository listDeviceRepository;
     private final CategoryRepository categoryRepository;
+    private final LabelRepository labelRepository;
     private final SyncEngine syncEngine;
     private final ListSyncBroadcaster broadcaster;
 
-    public List<Item> getByList(UUID listId, Device device) {
+    public List<Item> getByList(UUID listId, Device device, String q) {
         requireAccess(listId, device);
-        return itemRepository.findByListIdOrderByPosition(listId);
+        if (q == null || q.isBlank()) {
+            return itemRepository.findByListIdOrderByPosition(listId);
+        }
+        return itemRepository.findByListIdAndNameContainingIgnoreCaseOrderByPosition(listId, q);
     }
 
     @Transactional
@@ -55,6 +60,11 @@ public class ItemService {
         if (req.categoryId() != null) {
             categoryRepository.findById(req.categoryId()).ifPresent(item::setCategory);
         }
+        if (req.labelIds() != null && !req.labelIds().isEmpty()) {
+            item.setLabels(new java.util.HashSet<>(labelRepository.findAllById(req.labelIds())));
+        }
+        item.setQuantity(req.quantity());
+        item.setQuantityUnit(req.quantityUnit());
 
         item = itemRepository.save(item);
 
@@ -80,6 +90,11 @@ public class ItemService {
         } else {
             item.setCategory(null);
         }
+        if (req.labelIds() != null) {
+            item.setLabels(new java.util.HashSet<>(labelRepository.findAllById(req.labelIds())));
+        }
+        item.setQuantity(req.quantity());
+        item.setQuantityUnit(req.quantityUnit());
 
         item = itemRepository.save(item);
 

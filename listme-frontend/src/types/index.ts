@@ -12,6 +12,18 @@ export interface ShoppingList {
   updatedAt: string
 }
 
+export interface Label {
+  id: string
+  name: string
+  color: string | null
+}
+
+export interface Favorite {
+  id: string
+  itemName: string
+  emoji: string | null
+}
+
 export interface Item {
   id: string
   listId: string
@@ -21,6 +33,9 @@ export interface Item {
   categoryId: string | null
   categoryName: string | null
   categoryColor: string | null
+  quantity: number | null
+  quantityUnit: string | null
+  labels: Label[]
   createdAt: string
   updatedAt: string
 }
@@ -30,6 +45,26 @@ export interface Category {
   name: string
   color: string | null
   position: number
+}
+
+// API response types for sharing
+
+export interface ShareTokenResponse {
+  token: string
+  listId: string
+  listName: string
+}
+
+export interface SyncTokenResponse {
+  token: string
+  listCount: number
+  expiresAt: string
+}
+
+export interface ParticipantResponse {
+  deviceId: string
+  role: string
+  joinedAt: string
 }
 
 // UI-only helpers
@@ -57,11 +92,27 @@ export interface UpdateListRequest {
 export interface CreateItemRequest {
   name: string
   categoryId?: string
+  labelIds?: string[]
+  quantity?: number | null
+  quantityUnit?: string | null
 }
 
 export interface UpdateItemRequest {
   name: string
   categoryId?: string
+  labelIds?: string[]
+  quantity?: number | null
+  quantityUnit?: string | null
+}
+
+export interface CreateLabelRequest {
+  name: string
+  color?: string
+}
+
+export interface CreateFavoriteRequest {
+  itemName: string
+  emoji?: string
 }
 
 export interface CreateCategoryRequest {

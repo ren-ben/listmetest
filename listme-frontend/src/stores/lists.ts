@@ -67,5 +67,12 @@ export const useListsStore = defineStore('lists', () => {
     }
   }
 
-  return { lists, loading, error, fetchAll, create, update, remove, getById, patchCounts }
+  async function duplicate(listId: string): Promise<ShoppingList> {
+    const copy = await listService.duplicate(listId)
+    lists.value.push(copy)
+    await CacheService.saveList(copy)
+    return copy
+  }
+
+  return { lists, loading, error, fetchAll, create, update, remove, getById, patchCounts, duplicate }
 })

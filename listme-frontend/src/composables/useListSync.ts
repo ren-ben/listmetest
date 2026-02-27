@@ -3,6 +3,8 @@ import { connectWebSocket, subscribe, send, isConnected } from '../services/webs
 import { useItemsStore } from '../stores/items'
 import { usePresenceStore } from '../stores/presence'
 import { getDeviceId } from '../services/device'
+import { detectConflicts } from '../crdt/ConflictDetector'
+import type { Conflict } from '../crdt/ConflictDetector'
 import type { CrdtOperation } from '../crdt/types'
 import type { Item } from '../types'
 
@@ -15,8 +17,10 @@ import type { Item } from '../types'
  */
 export function useListSync() {
   const connected = ref(false)
+  const conflicts = ref<Conflict[]>([])
   const unsubscribers: Array<() => void> = []
   let currentListId: string | null = null
+  const sessionOps: CrdtOperation[] = []
 
   async function startSync(listId: string) {
     currentListId = listId
@@ -38,6 +42,8 @@ export function useListSync() {
       const op = payload as CrdtOperation
       // Skip ops originating from this device — already applied locally via HTTP response
       if (op.deviceId === myDeviceId) return
+      sessionOps.push(op)
+      conflicts.value = detectConflicts(sessionOps)
       applyOp(listId, op, itemsStore)
     })
 
@@ -60,11 +66,17 @@ export function useListSync() {
     unsubscribers.forEach(fn => fn())
     unsubscribers.length = 0
     currentListId = null
+    sessionOps.length = 0
+    conflicts.value = []
+  }
+
+  function dismissConflicts() {
+    conflicts.value = []
   }
 
   onUnmounted(stopSync)
 
-  return { connected, startSync, stopSync }
+  return { connected, conflicts, dismissConflicts, startSync, stopSync }
 }
 
 /**
