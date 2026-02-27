@@ -32,6 +32,10 @@ services:
       SPRING_JPA_SHOW_SQL: "false"
       LOGGING_LEVEL_COM_OLIWIER_LISTMEBACKEND: INFO
       LOGGING_LEVEL_ORG_HIBERNATE_SQL: WARN
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?AWS_ACCESS_KEY_ID is required}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?AWS_SECRET_ACCESS_KEY is required}
+      AWS_REGION: ${AWS_REGION:-eu-central-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-listme-item-images}
     networks:
       - listme        # internal: reachable by frontend nginx
 

@@ -33,6 +33,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/listme
       SPRING_DATASOURCE_USERNAME: listme
       SPRING_DATASOURCE_PASSWORD: listme
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_REGION: ${AWS_REGION:-eu-central-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-listme-item-images}
 
   frontend:
     image: node:20-alpine
