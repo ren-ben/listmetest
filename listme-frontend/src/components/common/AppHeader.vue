@@ -23,12 +23,7 @@ onMounted(() => {
   >
     <div class="flex items-center justify-between px-5 h-14">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-ctp-teal to-ctp-sapphire flex items-center justify-center shadow-lg shadow-ctp-teal/20">
-          <svg class="w-4 h-4 text-ctp-crust" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 11l3 3L22 4" />
-            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-          </svg>
-        </div>
+        <img src="/icon.svg" class="w-8 h-8 rounded-xl shadow-lg shadow-ctp-teal/20" alt="ListMe" />
         <h1 class="text-lg font-semibold text-ctp-text tracking-tight">ListMe</h1>
       </div>
 
