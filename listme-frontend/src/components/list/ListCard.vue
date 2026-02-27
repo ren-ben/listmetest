@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { ShoppingList, AccentColor } from '../../types'
 import { useListsStore } from '../../stores/lists'
@@ -13,6 +13,21 @@ const router = useRouter()
 const listsStore = useListsStore()
 
 const menuOpen = ref(false)
+const menuButtonRef = ref<HTMLButtonElement | null>(null)
+const menuPos = ref({ top: 0, right: 0 })
+
+function openMenu() {
+  if (menuButtonRef.value) {
+    const rect = menuButtonRef.value.getBoundingClientRect()
+    menuPos.value = {
+      top: rect.bottom + 6,
+      right: window.innerWidth - rect.right,
+    }
+  }
+  menuOpen.value = true
+}
+
+onUnmounted(() => { menuOpen.value = false })
 
 const progress = computed(() =>
   props.list.itemCount > 0
@@ -113,10 +128,11 @@ async function remove() {
 
       <!-- Right: context menu + progress badge -->
       <div class="flex items-center gap-2 shrink-0">
-        <!-- Context menu -->
-        <div class="relative" @click.stop>
+        <!-- Context menu trigger -->
+        <div @click.stop>
           <button
-            @click="menuOpen = !menuOpen"
+            ref="menuButtonRef"
+            @click="openMenu"
             class="p-1 rounded-lg text-ctp-overlay0 hover:text-ctp-text hover:bg-ctp-surface1 transition-colors opacity-0 group-hover:opacity-100"
             title="Optionen"
           >
@@ -125,35 +141,37 @@ async function remove() {
             </svg>
           </button>
 
-          <!-- Backdrop to close menu -->
-          <div v-if="menuOpen" class="fixed inset-0 z-10" @click="menuOpen = false" />
-
-          <!-- Dropdown -->
-          <Transition name="menu">
-            <div
-              v-if="menuOpen"
-              class="absolute top-8 right-0 z-20 bg-ctp-surface1 rounded-xl shadow-lg min-w-36 py-1 border border-ctp-surface2"
-            >
-              <button
-                @click="duplicate"
-                class="w-full text-left px-4 py-2.5 text-sm text-ctp-text hover:bg-ctp-surface2 transition-colors flex items-center gap-2"
-              >
-                <svg class="w-4 h-4 text-ctp-subtext0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                Duplizieren
-              </button>
-              <button
-                @click="remove"
-                class="w-full text-left px-4 py-2.5 text-sm text-ctp-red hover:bg-ctp-red/10 transition-colors flex items-center gap-2"
-              >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Löschen
-              </button>
-            </div>
-          </Transition>
+          <!-- Teleported so it escapes the card's stacking context -->
+          <Teleport to="body">
+            <template v-if="menuOpen">
+              <div class="fixed inset-0 z-100" @click="menuOpen = false" />
+              <Transition name="menu" appear>
+                <div
+                  class="fixed z-101 bg-ctp-surface1 rounded-xl shadow-xl min-w-40 py-1 border border-ctp-surface2"
+                  :style="{ top: menuPos.top + 'px', right: menuPos.right + 'px' }"
+                >
+                  <button
+                    @click="duplicate"
+                    class="w-full text-left px-4 py-2.5 text-sm text-ctp-text hover:bg-ctp-surface2 transition-colors flex items-center gap-2"
+                  >
+                    <svg class="w-4 h-4 text-ctp-subtext0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Duplizieren
+                  </button>
+                  <button
+                    @click="remove"
+                    class="w-full text-left px-4 py-2.5 text-sm text-ctp-red hover:bg-ctp-red/10 transition-colors flex items-center gap-2"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Löschen
+                  </button>
+                </div>
+              </Transition>
+            </template>
+          </Teleport>
         </div>
 
         <!-- Progress badge -->

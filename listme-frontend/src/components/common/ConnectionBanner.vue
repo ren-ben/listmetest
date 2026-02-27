@@ -1,14 +1,16 @@
 <template>
-  <Transition name="banner">
-    <div
-      v-if="show"
-      class="fixed top-14 left-0 right-0 z-40 flex items-center justify-center gap-2 py-2 px-4 text-xs font-medium safe-top"
-      :class="bannerClass"
-    >
-      <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="dotClass" />
-      <span>{{ message }}</span>
-    </div>
-  </Transition>
+  <Teleport to="body">
+    <Transition name="snackbar">
+      <div
+        v-if="show"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-medium shadow-lg shadow-ctp-crust/30 whitespace-nowrap"
+        :class="bannerClass"
+      >
+        <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="dotClass" />
+        <span>{{ message }}</span>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -22,7 +24,6 @@ const { isOnline } = useOffline()
 const show = ref(false)
 let hideTimeout: ReturnType<typeof setTimeout> | null = null
 
-/** Worst-case state: offline HTTP > offline WS > connected */
 const status = computed<'offline' | 'syncing' | 'connected'>(() => {
   if (!isOnline.value) return 'offline'
   if (!props.connected) return 'syncing'
@@ -30,21 +31,20 @@ const status = computed<'offline' | 'syncing' | 'connected'>(() => {
 })
 
 const bannerClass = computed(() => ({
-  'bg-ctp-red/15 text-ctp-red border-b border-ctp-red/20': status.value === 'offline',
-  'bg-ctp-yellow/15 text-ctp-yellow border-b border-ctp-yellow/20': status.value === 'syncing',
-  'bg-ctp-green/15 text-ctp-green border-b border-ctp-green/20': status.value === 'connected',
+  'bg-ctp-red/90 text-ctp-base': status.value === 'offline',
+  'bg-ctp-surface1 text-ctp-yellow border border-ctp-yellow/30': status.value === 'syncing',
+  'bg-ctp-green/90 text-ctp-base': status.value === 'connected',
 }))
 
 const dotClass = computed(() => ({
-  'bg-ctp-red': status.value === 'offline',
+  'bg-ctp-base': status.value === 'offline' || status.value === 'connected',
   'bg-ctp-yellow animate-pulse': status.value === 'syncing',
-  'bg-ctp-green animate-pulse': status.value === 'connected',
 }))
 
 const message = computed(() => {
-  if (status.value === 'offline') return 'Kein Internet — Änderungen werden gespeichert'
+  if (status.value === 'offline') return 'Kein Internet — Offline gespeichert'
   if (status.value === 'syncing') return 'Verbindung wird hergestellt…'
-  return 'Verbunden — Änderungen werden live synchronisiert'
+  return 'Verbunden'
 })
 
 onMounted(() => {
@@ -61,13 +61,13 @@ watch(status, (next, prev) => {
 </script>
 
 <style scoped>
-.banner-enter-active,
-.banner-leave-active {
-  transition: all 0.25s ease;
+.snackbar-enter-active,
+.snackbar-leave-active {
+  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
-.banner-enter-from,
-.banner-leave-to {
+.snackbar-enter-from,
+.snackbar-leave-to {
   opacity: 0;
-  transform: translateY(-100%);
+  transform: translateX(-50%) translateY(16px);
 }
 </style>
