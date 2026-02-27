@@ -71,6 +71,28 @@
             </div>
           </div>
 
+          <!-- Price row -->
+          <div class="flex items-center gap-2 mb-3">
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ctp-overlay1">€</span>
+              <input
+                v-model.number="price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                class="w-28 bg-ctp-surface0 border border-ctp-surface1 rounded-xl pl-7 pr-3 py-2 text-sm text-ctp-text placeholder-ctp-overlay0 focus:outline-none focus:border-ctp-teal transition-colors"
+              />
+            </div>
+            <span class="text-xs text-ctp-overlay0">Preis pro Einheit</span>
+          </div>
+
+          <!-- Image picker -->
+          <div class="mb-4">
+            <p class="text-[10px] text-ctp-overlay0 mb-1.5 uppercase tracking-wide">Bild</p>
+            <ImagePicker v-model="imageUrl" />
+          </div>
+
           <!-- Labels -->
           <div v-if="listLabels.length > 0" class="mb-4">
             <p class="text-[10px] text-ctp-overlay0 mb-1.5 uppercase tracking-wide">Labels</p>
@@ -108,6 +130,7 @@ import type { Item, Favorite } from '../../types'
 import { favoriteService } from '../../services/favorite'
 import { useLabelsStore } from '../../stores/labels'
 import LabelPicker from './LabelPicker.vue'
+import ImagePicker from './ImagePicker.vue'
 
 const UNITS = ['Stk.', 'kg', 'g', 'L', 'ml']
 
@@ -119,7 +142,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  submit: [payload: { name: string; quantity: number | null; quantityUnit: string | null; labelIds: string[] }]
+  submit: [payload: { name: string; quantity: number | null; quantityUnit: string | null; labelIds: string[]; price: number | null; imageUrl: string | null }]
 }>()
 
 const labelsStore = useLabelsStore()
@@ -128,6 +151,8 @@ const listLabels = computed(() => labelsStore.getForList(props.listId))
 const name = ref('')
 const quantity = ref<number | ''>('')
 const quantityUnit = ref('')
+const price = ref<number | ''>('')
+const imageUrl = ref<string | null>(null)
 const selectedLabelIds = ref<string[]>([])
 const favorites = ref<Favorite[]>([])
 const inputRef = ref<HTMLInputElement | null>(null)
@@ -137,6 +162,8 @@ watch(() => props.modelValue, async (open) => {
     name.value = props.editingItem?.name ?? ''
     quantity.value = props.editingItem?.quantity ?? ''
     quantityUnit.value = props.editingItem?.quantityUnit ?? ''
+    price.value = props.editingItem?.price ?? ''
+    imageUrl.value = props.editingItem?.imageUrl ?? null
     selectedLabelIds.value = props.editingItem?.labels?.map(l => l.id) ?? []
     nextTick(() => inputRef.value?.focus())
 
@@ -159,6 +186,8 @@ function submit() {
     name: name.value.trim(),
     quantity: quantity.value === '' ? null : quantity.value,
     quantityUnit: quantityUnit.value || null,
+    price: price.value === '' ? null : price.value,
+    imageUrl: imageUrl.value,
     labelIds: selectedLabelIds.value,
   })
   close()
@@ -168,6 +197,8 @@ function close() {
   name.value = ''
   quantity.value = ''
   quantityUnit.value = ''
+  price.value = ''
+  imageUrl.value = null
   selectedLabelIds.value = []
   emit('update:modelValue', false)
 }

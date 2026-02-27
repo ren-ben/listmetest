@@ -35,9 +35,16 @@ export interface Item {
   categoryColor: string | null
   quantity: number | null
   quantityUnit: string | null
+  price: number | null
+  imageUrl: string | null
   labels: Label[]
   createdAt: string
   updatedAt: string
+}
+
+export interface BudgetSummary {
+  total: number
+  byCategory: Record<string, number>
 }
 
 export interface Category {
@@ -95,6 +102,8 @@ export interface CreateItemRequest {
   labelIds?: string[]
   quantity?: number | null
   quantityUnit?: string | null
+  price?: number | null
+  imageUrl?: string | null
 }
 
 export interface UpdateItemRequest {
@@ -103,6 +112,8 @@ export interface UpdateItemRequest {
   labelIds?: string[]
   quantity?: number | null
   quantityUnit?: string | null
+  price?: number | null
+  imageUrl?: string | null
 }
 
 export interface CreateLabelRequest {

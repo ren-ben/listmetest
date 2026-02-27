@@ -16,7 +16,15 @@
       </svg>
     </button>
 
-    <!-- Name + category + quantity + labels -->
+    <!-- Thumbnail (if image set) -->
+    <img
+      v-if="item.imageUrl"
+      :src="item.imageUrl"
+      :alt="item.name"
+      class="w-8 h-8 rounded-lg object-cover shrink-0"
+    />
+
+    <!-- Name + category + quantity + price + labels -->
     <div class="flex-1 min-w-0">
       <span
         class="text-sm font-medium text-ctp-text truncate block transition-all duration-200"
@@ -24,7 +32,7 @@
       >
         {{ item.name }}
       </span>
-      <div v-if="item.categoryName || item.quantity || item.labels?.length" class="flex items-center flex-wrap gap-1 mt-0.5">
+      <div v-if="item.categoryName || item.quantity || item.price || item.labels?.length" class="flex items-center flex-wrap gap-1 mt-0.5">
         <span
           v-if="item.categoryName"
           class="text-xs px-1.5 py-0.5 rounded-md font-medium"
@@ -35,6 +43,9 @@
         </span>
         <span v-if="item.quantity" class="text-xs text-ctp-overlay1">
           {{ item.quantity }}{{ item.quantityUnit ? ' ' + item.quantityUnit : '' }}
+        </span>
+        <span v-if="item.price" class="text-xs text-ctp-overlay1">
+          € {{ item.price.toFixed(2) }}
         </span>
         <LabelTag v-for="label in item.labels" :key="label.id" :label="label" />
       </div>

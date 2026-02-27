@@ -12,5 +12,7 @@ public record CreateItemRequest(
         UUID categoryId,
         List<UUID> labelIds,
         BigDecimal quantity,
-        String quantityUnit
+        String quantityUnit,
+        BigDecimal price,
+        String imageUrl
 ) {}

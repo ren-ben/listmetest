@@ -65,6 +65,8 @@ public class ItemService {
         }
         item.setQuantity(req.quantity());
         item.setQuantityUnit(req.quantityUnit());
+        item.setPrice(req.price());
+        item.setImageUrl(req.imageUrl());
 
         item = itemRepository.save(item);
 
@@ -95,6 +97,8 @@ public class ItemService {
         }
         item.setQuantity(req.quantity());
         item.setQuantityUnit(req.quantityUnit());
+        item.setPrice(req.price());
+        item.setImageUrl(req.imageUrl());
 
         item = itemRepository.save(item);
 

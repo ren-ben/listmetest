@@ -103,6 +103,8 @@ function applyOp(listId: string, op: CrdtOperation, itemsStore: ReturnType<typeo
         categoryColor: null,
         quantity: null,
         quantityUnit: null,
+        price: null,
+        imageUrl: null,
         labels: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

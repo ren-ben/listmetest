@@ -74,6 +74,8 @@ export const useItemsStore = defineStore('items', () => {
         categoryColor: null,
         quantity: req.quantity ?? null,
         quantityUnit: req.quantityUnit ?? null,
+        price: req.price ?? null,
+        imageUrl: req.imageUrl ?? null,
         labels: [],
         createdAt: now,
         updatedAt: now,
@@ -115,6 +117,8 @@ export const useItemsStore = defineStore('items', () => {
         name: req.name,
         quantity: req.quantity ?? null,
         quantityUnit: req.quantityUnit ?? null,
+        price: req.price ?? null,
+        imageUrl: req.imageUrl ?? null,
         updatedAt: new Date().toISOString(),
       }
       items[idx] = patched

@@ -18,6 +18,8 @@ public record ItemResponse(
         String categoryColor,
         BigDecimal quantity,
         String quantityUnit,
+        BigDecimal price,
+        String imageUrl,
         List<LabelResponse> labels,
         Instant createdAt,
         Instant updatedAt
@@ -34,6 +36,8 @@ public record ItemResponse(
                 item.getCategory() != null ? item.getCategory().getColor() : null,
                 item.getQuantity(),
                 item.getQuantityUnit(),
+                item.getPrice(),
+                item.getImageUrl(),
                 item.getLabels().stream().map(LabelResponse::from).toList(),
                 item.getCreatedAt(),
                 item.getUpdatedAt()

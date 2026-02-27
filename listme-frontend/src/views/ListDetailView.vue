@@ -103,38 +103,43 @@
         <p class="text-ctp-subtext0 text-sm">Noch keine Items. Füge das erste hinzu!</p>
       </div>
 
-      <div v-else-if="filteredItems.length === 0" class="text-center py-12 text-ctp-subtext0 text-sm">
-        Keine Items für „{{ searchQuery }}" gefunden.
-      </div>
+      <template v-else>
+        <!-- Budget bar (shown when any unchecked item has a price) -->
+        <BudgetBar :list-id="listId" :items-version="itemsVersion" />
 
-      <div v-else class="space-y-1">
-        <!-- Unchecked -->
-        <div class="group" v-for="item in filteredUncheckedItems" :key="item.id">
-          <ItemRow
-            :item="item"
-            @toggle="itemsStore.toggleCheck(listId, $event)"
-            @edit="startEdit"
-            @delete="deleteItem"
-          />
+        <div v-if="filteredItems.length === 0" class="text-center py-12 text-ctp-subtext0 text-sm">
+          Keine Items für „{{ searchQuery }}" gefunden.
         </div>
 
-        <!-- Divider -->
-        <div v-if="filteredUncheckedItems.length > 0 && filteredCheckedItems.length > 0" class="flex items-center gap-3 py-2 px-4">
-          <div class="flex-1 h-px bg-ctp-surface1" />
-          <span class="text-xs text-ctp-overlay0">Erledigt</span>
-          <div class="flex-1 h-px bg-ctp-surface1" />
-        </div>
+        <div v-else class="space-y-1">
+          <!-- Unchecked -->
+          <div class="group" v-for="item in filteredUncheckedItems" :key="item.id">
+            <ItemRow
+              :item="item"
+              @toggle="onToggle(listId, $event)"
+              @edit="startEdit"
+              @delete="deleteItem"
+            />
+          </div>
 
-        <!-- Checked -->
-        <div class="group" v-for="item in filteredCheckedItems" :key="item.id">
-          <ItemRow
-            :item="item"
-            @toggle="itemsStore.toggleCheck(listId, $event)"
-            @edit="startEdit"
-            @delete="deleteItem"
-          />
+          <!-- Divider -->
+          <div v-if="filteredUncheckedItems.length > 0 && filteredCheckedItems.length > 0" class="flex items-center gap-3 py-2 px-4">
+            <div class="flex-1 h-px bg-ctp-surface1" />
+            <span class="text-xs text-ctp-overlay0">Erledigt</span>
+            <div class="flex-1 h-px bg-ctp-surface1" />
+          </div>
+
+          <!-- Checked -->
+          <div class="group" v-for="item in filteredCheckedItems" :key="item.id">
+            <ItemRow
+              :item="item"
+              @toggle="onToggle(listId, $event)"
+              @edit="startEdit"
+              @delete="deleteItem"
+            />
+          </div>
         </div>
-      </div>
+      </template>
     </div>
 
     <!-- FAB -->
@@ -172,6 +177,7 @@ import { usePresenceStore } from '../stores/presence'
 import { useListSync } from '../composables/useListSync'
 import ItemRow from '../components/item/ItemRow.vue'
 import AddItemSheet from '../components/item/AddItemSheet.vue'
+import BudgetBar from '../components/list/BudgetBar.vue'
 import ConnectionBanner from '../components/common/ConnectionBanner.vue'
 import ConflictBanner from '../components/list/ConflictBanner.vue'
 import ParticipantList from '../components/list/ParticipantList.vue'
@@ -190,6 +196,9 @@ const { connected: syncConnected, conflicts, dismissConflicts, startSync } = use
 const list = computed(() => listsStore.getById(listId))
 const items = computed(() => itemsStore.getItems(listId))
 
+// Bumped after any create/update/toggle/delete so BudgetBar re-fetches
+const itemsVersion = ref(0)
+
 const showSearch = ref(false)
 const searchQuery = ref('')
 const searchInputRef = ref<HTMLInputElement | null>(null)
@@ -201,7 +210,6 @@ const filteredItems = computed(() => {
 })
 const filteredUncheckedItems = computed(() => filteredItems.value.filter(i => !i.checked))
 const filteredCheckedItems = computed(() => filteredItems.value.filter(i => i.checked))
-
 
 const onlineCount = computed(() => presenceStore.getCount(listId))
 const progressPct = computed(() => {
@@ -238,13 +246,20 @@ function startEdit(item: Item) {
   showAddSheet.value = true
 }
 
-async function handleItemSubmit(payload: { name: string; quantity: number | null; quantityUnit: string | null; labelIds: string[] }) {
+async function onToggle(lid: string, itemId: string) {
+  await itemsStore.toggleCheck(lid, itemId)
+  itemsVersion.value++
+}
+
+async function handleItemSubmit(payload: { name: string; quantity: number | null; quantityUnit: string | null; labelIds: string[]; price: number | null; imageUrl: string | null }) {
   if (editingItem.value) {
     await itemsStore.update(listId, editingItem.value.id, {
       name: payload.name,
       quantity: payload.quantity,
       quantityUnit: payload.quantityUnit,
       labelIds: payload.labelIds,
+      price: payload.price,
+      imageUrl: payload.imageUrl,
     })
     editingItem.value = null
   } else {
@@ -253,12 +268,16 @@ async function handleItemSubmit(payload: { name: string; quantity: number | null
       quantity: payload.quantity,
       quantityUnit: payload.quantityUnit,
       labelIds: payload.labelIds,
+      price: payload.price,
+      imageUrl: payload.imageUrl,
     })
   }
+  itemsVersion.value++
 }
 
 async function deleteItem(itemId: string) {
   await itemsStore.remove(listId, itemId)
+  itemsVersion.value++
 }
 </script>
 

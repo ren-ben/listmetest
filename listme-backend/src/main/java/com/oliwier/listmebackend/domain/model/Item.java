@@ -46,6 +46,12 @@ public class Item {
     @Column(name = "quantity_unit", length = 20)
     private String quantityUnit;
 
+    @Column(name = "price", precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @ManyToMany
     @JoinTable(
         name = "item_labels",
