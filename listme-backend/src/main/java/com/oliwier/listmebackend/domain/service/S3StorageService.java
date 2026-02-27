@@ -20,7 +20,7 @@ public class S3StorageService {
     @Value("${aws.s3.bucket}")
     private String bucket;
 
-    public PresignResponse presign(String originalFilename, String contentType) {
+    public PresignResponse presign(String originalFilename) {
         String ext = originalFilename.contains(".")
                 ? originalFilename.substring(originalFilename.lastIndexOf('.'))
                 : "";
@@ -33,7 +33,6 @@ public class S3StorageService {
             PutObjectRequest putRequest = PutObjectRequest.builder()
                     .bucket(bucket)
                     .key(key)
-                    .contentType(contentType)
                     .build();
 
             PresignedPutObjectRequest presigned = presigner.presignPutObject(r -> r

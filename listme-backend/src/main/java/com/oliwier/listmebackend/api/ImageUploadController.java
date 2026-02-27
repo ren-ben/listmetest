@@ -16,9 +16,7 @@ public class ImageUploadController {
     private final S3StorageService storageService;
 
     @PostMapping("/presign")
-    public PresignResponse presign(
-            @RequestParam String filename,
-            @RequestParam(defaultValue = "image/jpeg") String contentType) {
-        return storageService.presign(filename, contentType);
+    public PresignResponse presign(@RequestParam String filename) {
+        return storageService.presign(filename);
     }
 }
