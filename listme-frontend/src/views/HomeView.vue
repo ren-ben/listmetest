@@ -40,6 +40,7 @@ async function handleCreate(name: string, emoji: string) {
       <button
         @click="showLinkModal = true"
         class="mt-1 p-2 rounded-xl text-ctp-subtext0 hover:text-ctp-teal hover:bg-ctp-surface0 transition-colors"
+        aria-label="Geräte verknüpfen"
         title="Geräte verknüpfen"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

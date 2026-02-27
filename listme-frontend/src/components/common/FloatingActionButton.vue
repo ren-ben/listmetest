@@ -17,6 +17,7 @@ defineEmits<{
       animate-scale-in
     "
     style="bottom: calc(5rem + env(safe-area-inset-bottom)); right: 1.25rem;"
+    aria-label="Liste erstellen"
     @click="$emit('click')"
   >
     <!-- Pulse ring -->

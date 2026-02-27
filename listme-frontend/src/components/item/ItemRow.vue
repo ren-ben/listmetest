@@ -6,6 +6,7 @@
     <!-- Checkbox -->
     <button
       @click="emit('toggle', item.id)"
+      :aria-label="item.checked ? 'Als offen markieren' : 'Artikel erledigen'"
       class="flex-shrink-0 w-6 h-6 rounded-full border-2 transition-all duration-200 flex items-center justify-center"
       :class="item.checked
         ? 'bg-ctp-green border-ctp-green'

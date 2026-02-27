@@ -8,6 +8,7 @@
       <div class="max-w-lg mx-auto px-4 h-14 flex items-center gap-3">
         <button
           @click="router.back()"
+          aria-label="Zurück"
           class="p-2 rounded-xl text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0 transition-colors"
         >
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -43,11 +44,52 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
             </svg>
           </button>
+          <!-- Export button -->
+          <div v-if="list" class="relative">
+            <button
+              @click="showExportMenu = !showExportMenu"
+              class="p-2 rounded-xl text-ctp-subtext0 hover:text-ctp-teal hover:bg-ctp-surface0 transition-colors"
+              aria-label="Liste exportieren"
+              title="Exportieren"
+            >
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </button>
+            <!-- Backdrop -->
+            <div v-if="showExportMenu" class="fixed inset-0 z-40" @click="showExportMenu = false" />
+            <!-- Dropdown -->
+            <div
+              v-if="showExportMenu"
+              class="absolute right-0 top-full mt-1 z-50 bg-ctp-mantle border border-ctp-surface1 rounded-2xl shadow-xl overflow-hidden min-w-32.5"
+            >
+              <button
+                @click="doExport('csv')"
+                class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-ctp-text hover:bg-ctp-surface0 transition-colors text-left"
+              >
+                <svg class="w-4 h-4 text-ctp-teal shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                </svg>
+                CSV
+              </button>
+              <button
+                @click="doExport('pdf')"
+                class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-ctp-text hover:bg-ctp-surface0 transition-colors text-left border-t border-ctp-surface1/50"
+              >
+                <svg class="w-4 h-4 text-ctp-red shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                PDF
+              </button>
+            </div>
+          </div>
+
           <!-- Share button -->
           <button
             v-if="list"
             @click="showShareModal = true"
             class="p-2 rounded-xl text-ctp-subtext0 hover:text-ctp-teal hover:bg-ctp-surface0 transition-colors"
+            aria-label="Liste teilen"
             title="Liste teilen"
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -175,6 +217,7 @@ import { useListsStore } from '../stores/lists'
 import { useItemsStore } from '../stores/items'
 import { usePresenceStore } from '../stores/presence'
 import { useListSync } from '../composables/useListSync'
+import { exportService } from '../services/export'
 import ItemRow from '../components/item/ItemRow.vue'
 import AddItemSheet from '../components/item/AddItemSheet.vue'
 import BudgetBar from '../components/list/BudgetBar.vue'
@@ -219,7 +262,14 @@ const progressPct = computed(() => {
 
 const showAddSheet = ref(false)
 const showShareModal = ref(false)
+const showExportMenu = ref(false)
 const editingItem = ref<Item | null>(null)
+
+async function doExport(format: 'csv' | 'pdf') {
+  showExportMenu.value = false
+  if (!list.value) return
+  await exportService.download(listId, format, list.value.name)
+}
 
 function toggleSearch() {
   showSearch.value = !showSearch.value

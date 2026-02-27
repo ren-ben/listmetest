@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import ListDetailView from '../views/ListDetailView.vue'
 import JoinListView from '../views/JoinListView.vue'
 import SyncApplyView from '../views/SyncApplyView.vue'
+import SettingsView from '../views/SettingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +30,11 @@ const router = createRouter({
       name: 'sync-apply',
       component: SyncApplyView,
       meta: { hideChrome: true },
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
     },
   ],
 })

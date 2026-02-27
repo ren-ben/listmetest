@@ -9,10 +9,14 @@ const tabs = [
   { id: 'home', label: 'Listen', icon: 'lists', to: '/' },
   { id: 'favorites', label: 'Favoriten', icon: 'heart', to: null },
   { id: 'friends', label: 'Freunde', icon: 'users', to: null },
-  { id: 'settings', label: 'Einstellungen', icon: 'settings', to: null },
+  { id: 'settings', label: 'Einstellungen', icon: 'settings', to: '/settings' },
 ] as const
 
-const active = computed(() => route.name === 'home' ? 'home' : null)
+const active = computed(() => {
+  if (route.name === 'home') return 'home'
+  if (route.name === 'settings') return 'settings'
+  return null
+})
 
 function onTab(tab: typeof tabs[number]) {
   if (tab.to) router.push(tab.to)
