@@ -202,9 +202,7 @@ const filteredItems = computed(() => {
 const filteredUncheckedItems = computed(() => filteredItems.value.filter(i => !i.checked))
 const filteredCheckedItems = computed(() => filteredItems.value.filter(i => i.checked))
 
-// Keep legacy computed for the empty-state check (items.length === 0 means no items at all)
-const uncheckedItems = computed(() => items.value.filter(i => !i.checked))
-const checkedItems = computed(() => items.value.filter(i => i.checked))
+
 const onlineCount = computed(() => presenceStore.getCount(listId))
 const progressPct = computed(() => {
   if (!list.value || list.value.itemCount === 0) return 0
