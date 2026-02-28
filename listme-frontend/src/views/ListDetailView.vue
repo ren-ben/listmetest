@@ -345,7 +345,7 @@ async function doSavePreset() {
   if (!presetName.value.trim() || savingPreset.value || !list.value) return
   savingPreset.value = true
   try {
-    await presetService.create({ name: presetName.value.trim(), emoji: list.value.emoji, fromListId: listId })
+    await presetService.create(presetName.value.trim(), list.value.emoji, listId)
     presetSaved.value = true
     setTimeout(() => { showSavePreset.value = false }, 1200)
   } catch {
