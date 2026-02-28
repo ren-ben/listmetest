@@ -298,7 +298,7 @@ function parseVoice(raw: string): { name: string; qty: number | null; unit: stri
   let price: number | null = null
   const priceMatch = text.match(/(?:für\s+)?(\d+(?:[.,]\d+)?)\s*(?:€|euro|eur)\b/i)
   if (priceMatch) {
-    price = parseFloat(priceMatch[1].replace(',', '.'))
+    price = parseFloat(priceMatch[1]!.replace(',', '.'))
     text = text.replace(priceMatch[0], '').trim()
   }
 
