@@ -4,6 +4,7 @@ import ListDetailView from '../views/ListDetailView.vue'
 import JoinListView from '../views/JoinListView.vue'
 import SyncApplyView from '../views/SyncApplyView.vue'
 import SettingsView from '../views/SettingsView.vue'
+import TrashView from '../views/TrashView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,12 @@ const router = createRouter({
       path: '/list/:id',
       name: 'list-detail',
       component: ListDetailView,
+      meta: { hideChrome: true },
+    },
+    {
+      path: '/list/:id/trash',
+      name: 'list-trash',
+      component: TrashView,
       meta: { hideChrome: true },
     },
     {

@@ -30,6 +30,12 @@ public class ItemController {
         return itemService.getByList(listId, device, q).stream().map(ItemResponse::from).toList();
     }
 
+    @GetMapping("/trash")
+    public List<ItemResponse> getTrash(@PathVariable UUID listId,
+                                       @CurrentDevice Device device) {
+        return itemService.getTrash(listId, device).stream().map(ItemResponse::from).toList();
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
@@ -56,6 +62,7 @@ public class ItemController {
         return ItemResponse.from(itemService.toggleCheck(listId, itemId, device));
     }
 
+    /** Soft-delete: moves item to trash. */
     @DeleteMapping("/{itemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional
@@ -63,5 +70,24 @@ public class ItemController {
                        @PathVariable UUID itemId,
                        @CurrentDevice Device device) {
         itemService.delete(listId, itemId, device);
+    }
+
+    /** Restore an item from trash. */
+    @PatchMapping("/{itemId}/restore")
+    @Transactional
+    public ItemResponse restore(@PathVariable UUID listId,
+                                @PathVariable UUID itemId,
+                                @CurrentDevice Device device) {
+        return ItemResponse.from(itemService.restore(listId, itemId, device));
+    }
+
+    /** Permanently delete a trashed item — irreversible. */
+    @DeleteMapping("/{itemId}/permanent")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
+    public void permanentDelete(@PathVariable UUID listId,
+                                @PathVariable UUID itemId,
+                                @CurrentDevice Device device) {
+        itemService.permanentDelete(listId, itemId, device);
     }
 }

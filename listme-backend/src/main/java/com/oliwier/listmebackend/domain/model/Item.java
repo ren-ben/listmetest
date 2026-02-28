@@ -66,6 +66,9 @@ public class Item {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
     @PrePersist
     void prePersist() {
         if (id == null) id = UUID.randomUUID();

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
+import QRCode from 'qrcode'
 import { shareService } from '../../services/share'
 import type { ShoppingList } from '../../types'
 
@@ -17,6 +18,8 @@ const close = () => emit('update:modelValue', false)
 const loading = ref(false)
 const copied = ref(false)
 const revoking = ref(false)
+const showQR = ref(false)
+const qrCanvas = ref<HTMLCanvasElement | null>(null)
 const token = ref<string | null>(props.list.shareToken)
 
 watch(() => props.list.shareToken, t => { token.value = t })
@@ -28,6 +31,7 @@ const shareUrl = computed(() =>
 watch(() => props.modelValue, async (open) => {
   if (!open) return
   copied.value = false
+  showQR.value = false
   if (!token.value) {
     loading.value = true
     try {
@@ -36,6 +40,19 @@ watch(() => props.modelValue, async (open) => {
       emit('token-changed', res.token)
     } finally {
       loading.value = false
+    }
+  }
+})
+
+watch(showQR, async (show) => {
+  if (show && shareUrl.value) {
+    await nextTick()
+    if (qrCanvas.value) {
+      await QRCode.toCanvas(qrCanvas.value, shareUrl.value, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#303446', light: '#eff1f5' },
+      })
     }
   }
 })
@@ -85,6 +102,25 @@ async function revoke() {
             <span class="flex-1 text-sm text-ctp-text truncate font-mono">{{ shareUrl }}</span>
           </div>
 
+          <!-- QR toggle -->
+          <button
+            @click="showQR = !showQR"
+            class="w-full py-2.5 rounded-xl text-sm font-medium bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><path stroke-linecap="round" d="M14 14h2v2h-2zM18 14h3v2h-3zM14 18h3v2h-3zM19 18h2v3h-2z"/>
+            </svg>
+            {{ showQR ? 'QR-Code ausblenden' : 'Als QR-Code anzeigen' }}
+          </button>
+
+          <!-- QR Code -->
+          <Transition name="qr">
+            <div v-if="showQR" class="flex justify-center py-5 bg-ctp-surface0 rounded-2xl">
+              <canvas ref="qrCanvas" class="rounded-xl" />
+            </div>
+          </Transition>
+
           <button
             @click="copyLink"
             class="w-full py-3 rounded-xl font-semibold text-sm transition-colors"
@@ -128,4 +164,8 @@ async function revoke() {
 .sheet-leave-to .relative {
   transform: translateY(100%);
 }
+.qr-enter-active { transition: all 0.3s cubic-bezier(0.16,1,0.3,1); }
+.qr-leave-active { transition: all 0.2s ease; }
+.qr-enter-from { opacity: 0; transform: scaleY(0.85); transform-origin: top; }
+.qr-leave-to { opacity: 0; }
 </style>

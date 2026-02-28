@@ -8,11 +8,15 @@ import java.util.UUID;
 
 public interface ItemRepository extends JpaRepository<Item, UUID> {
 
-    List<Item> findByListIdOrderByPosition(UUID listId);
+    // Active items (not deleted)
+    List<Item> findByListIdAndDeletedAtIsNullOrderByPosition(UUID listId);
 
-    List<Item> findByListIdAndNameContainingIgnoreCaseOrderByPosition(UUID listId, String name);
+    List<Item> findByListIdAndNameContainingIgnoreCaseAndDeletedAtIsNullOrderByPosition(UUID listId, String name);
 
-    int countByListId(UUID listId);
+    int countByListIdAndDeletedAtIsNull(UUID listId);
 
-    int countByListIdAndCheckedTrue(UUID listId);
+    int countByListIdAndCheckedTrueAndDeletedAtIsNull(UUID listId);
+
+    // Trashed items
+    List<Item> findByListIdAndDeletedAtIsNotNullOrderByDeletedAtDesc(UUID listId);
 }

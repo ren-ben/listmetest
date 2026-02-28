@@ -41,9 +41,14 @@ public class ItemService {
     public List<Item> getByList(UUID listId, Device device, String q) {
         requireAccess(listId, device);
         if (q == null || q.isBlank()) {
-            return itemRepository.findByListIdOrderByPosition(listId);
+            return itemRepository.findByListIdAndDeletedAtIsNullOrderByPosition(listId);
         }
-        return itemRepository.findByListIdAndNameContainingIgnoreCaseOrderByPosition(listId, q);
+        return itemRepository.findByListIdAndNameContainingIgnoreCaseAndDeletedAtIsNullOrderByPosition(listId, q);
+    }
+
+    public List<Item> getTrash(UUID listId, Device device) {
+        requireAccess(listId, device);
+        return itemRepository.findByListIdAndDeletedAtIsNotNullOrderByDeletedAtDesc(listId);
     }
 
     @Transactional
@@ -54,7 +59,7 @@ public class ItemService {
         item.setList(list);
         item.setName(req.name());
         item.setChecked(false);
-        item.setPosition(itemRepository.countByListId(listId));
+        item.setPosition(itemRepository.countByListIdAndDeletedAtIsNull(listId));
         item.setCreatedByDevice(device);
 
         if (req.categoryId() != null) {
@@ -129,17 +134,44 @@ public class ItemService {
         return item;
     }
 
+    /** Soft delete — moves item to trash. */
     @Transactional
     public void delete(UUID listId, UUID itemId, Device device) {
         ShoppingList list = requireAccess(listId, device);
         Item item = requireItem(itemId, listId);
-        itemRepository.delete(item);
+        item.setDeletedAt(Instant.now());
+        itemRepository.save(item);
 
         CrdtOperation op = syncEngine.record(list, device, OperationType.ITEM_DELETE, Map.of(
                 "itemId", itemId.toString(),
                 "timestamp", Instant.now().toEpochMilli()
         ));
         broadcaster.broadcastOp(list.getId(), op);
+    }
+
+    /** Restore a trashed item to the active list. */
+    @Transactional
+    public Item restore(UUID listId, UUID itemId, Device device) {
+        requireAccess(listId, device);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
+        if (!item.getList().getId().equals(listId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found in this list");
+        }
+        item.setDeletedAt(null);
+        return itemRepository.save(item);
+    }
+
+    /** Permanently remove a trashed item — no recovery possible. */
+    @Transactional
+    public void permanentDelete(UUID listId, UUID itemId, Device device) {
+        requireAccess(listId, device);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
+        if (!item.getList().getId().equals(listId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found in this list");
+        }
+        itemRepository.delete(item);
     }
 
     private ShoppingList requireAccess(UUID listId, Device device) {
@@ -156,6 +188,9 @@ public class ItemService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
         if (!item.getList().getId().equals(listId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found in this list");
+        }
+        if (item.getDeletedAt() != null) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Item is in trash");
         }
         return item;
     }

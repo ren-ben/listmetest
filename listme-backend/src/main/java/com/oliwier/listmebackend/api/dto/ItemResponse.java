@@ -22,7 +22,8 @@ public record ItemResponse(
         String imageUrl,
         List<LabelResponse> labels,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        Instant deletedAt
 ) {
     public static ItemResponse from(Item item) {
         return new ItemResponse(
@@ -40,7 +41,8 @@ public record ItemResponse(
                 item.getImageUrl(),
                 item.getLabels().stream().map(LabelResponse::from).toList(),
                 item.getCreatedAt(),
-                item.getUpdatedAt()
+                item.getUpdatedAt(),
+                item.getDeletedAt()
         );
     }
 }
