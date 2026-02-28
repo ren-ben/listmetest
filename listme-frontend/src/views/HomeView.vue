@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useListsStore } from '../stores/lists'
 import ListSection from '../components/list/ListSection.vue'
 import ListCard from '../components/list/ListCard.vue'
@@ -7,19 +8,36 @@ import FloatingActionButton from '../components/common/FloatingActionButton.vue'
 import AddListModal from '../components/common/AddListModal.vue'
 import LinkDevicesModal from '../components/list/LinkDevicesModal.vue'
 
+const route = useRoute()
+const router = useRouter()
 const listsStore = useListsStore()
 const showAddModal = ref(false)
 const showLinkModal = ref(false)
 
+const initialPresetId = ref<string | null>(null)
+const initialPresetEmoji = ref<string | null>(null)
+const initialPresetName = ref<string | null>(null)
+
 onMounted(() => listsStore.fetchAll())
+
+// Open AddListModal pre-filled when coming from LibraryView via query params
+watch(() => route.query, (q) => {
+  if (q.presetId) {
+    initialPresetId.value = q.presetId as string
+    initialPresetEmoji.value = (q.presetEmoji as string) || null
+    initialPresetName.value = (q.presetName as string) || null
+    showAddModal.value = true
+    router.replace({ name: 'home' })
+  }
+}, { immediate: true })
 
 const lists = computed(() => listsStore.lists)
 const totalDone = computed(() => lists.value.reduce((a, l) => a + l.checkedCount, 0))
 const totalRemaining = computed(() => lists.value.reduce((a, l) => a + (l.itemCount - l.checkedCount), 0))
 const sharedCount = computed(() => lists.value.filter(l => l.participantCount > 1).length)
 
-async function handleCreate(name: string, emoji: string) {
-  await listsStore.create({ name, emoji })
+async function handleCreate(name: string, emoji: string, presetId: string | null) {
+  await listsStore.create({ name, emoji, presetId })
 }
 </script>
 
@@ -98,6 +116,9 @@ async function handleCreate(name: string, emoji: string) {
     <!-- Add modal -->
     <AddListModal
       :open="showAddModal"
+      :initial-preset-id="initialPresetId"
+      :initial-preset-emoji="initialPresetEmoji"
+      :initial-preset-name="initialPresetName"
       @close="showAddModal = false"
       @create="handleCreate"
     />

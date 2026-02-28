@@ -177,7 +177,7 @@ import { ref, watch, nextTick, computed } from 'vue'
 import type { Item, Favorite } from '../../types'
 import { favoriteService } from '../../services/favorite'
 import { useLabelsStore } from '../../stores/labels'
-import { useItemsStore } from '../../stores/items'
+import { searchHistory, type HistorySuggestion } from '../../services/itemHistory'
 import LabelPicker from './LabelPicker.vue'
 import ImagePicker from './ImagePicker.vue'
 import VoiceInput from './VoiceInput.vue'
@@ -197,7 +197,6 @@ const emit = defineEmits<{
 }>()
 
 const labelsStore = useLabelsStore()
-const itemsStore = useItemsStore()
 const listLabels = computed(() => labelsStore.getForList(props.listId))
 
 const name = ref('')
@@ -210,42 +209,15 @@ const favorites = ref<Favorite[]>([])
 const inputRef = ref<HTMLInputElement | null>(null)
 const showScanner = ref(false)
 
-// ── Smart suggestions (US21) ──────────────────────────────────────────────────
-interface Suggestion { name: string; quantityUnit: string | null; price: number | null; imageUrl: string | null }
+// ── Smart suggestions — backed by item history API (Phase 12) ─────────────────
+const suggestions = ref<HistorySuggestion[]>([])
 
-const suggestions = computed<Suggestion[]>(() => {
-  const q = name.value.trim().toLowerCase()
-  if (!q || q.length < 2) return []
-
-  // Collect all items across all lists from store
-  const allItems = Object.values(itemsStore.itemsByList).flat()
-
-  // Score: count matches by normalized name prefix
-  const scoreMap = new Map<string, { score: number; item: Item }>()
-  for (const item of allItems) {
-    const normalized = item.name.trim().toLowerCase()
-    if (!normalized.startsWith(q)) continue
-    const existing = scoreMap.get(normalized)
-    // Weight by recency: newer items score higher
-    const recencyScore = new Date(item.createdAt).getTime() / 1e12
-    const newScore = (existing?.score ?? 0) + 1 + recencyScore
-    if (!existing || newScore > existing.score) {
-      scoreMap.set(normalized, { score: newScore, item })
-    }
-  }
-
-  return Array.from(scoreMap.values())
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
-    .map(({ item }) => ({
-      name: item.name,
-      quantityUnit: item.quantityUnit ?? null,
-      price: item.price !== null && item.price !== undefined ? Number(item.price) : null,
-      imageUrl: item.imageUrl ?? null,
-    }))
+watch(name, async (val) => {
+  if (!val || val.trim().length < 2) { suggestions.value = []; return }
+  suggestions.value = await searchHistory(val.trim(), 5)
 })
 
-function fillFromSuggestion(s: Suggestion) {
+function fillFromSuggestion(s: HistorySuggestion) {
   name.value = s.name
   if (s.quantityUnit) quantityUnit.value = s.quantityUnit
   if (s.price !== null) price.value = s.price

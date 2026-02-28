@@ -7,9 +7,11 @@ import com.oliwier.listmebackend.api.dto.UpdateListRequest;
 import com.oliwier.listmebackend.domain.model.Device;
 import com.oliwier.listmebackend.domain.model.Item;
 import com.oliwier.listmebackend.domain.model.ListDevice;
+import com.oliwier.listmebackend.domain.model.PresetItem;
 import com.oliwier.listmebackend.domain.model.ShoppingList;
 import com.oliwier.listmebackend.domain.repository.ItemRepository;
 import com.oliwier.listmebackend.domain.repository.ListDeviceRepository;
+import com.oliwier.listmebackend.domain.repository.PresetItemRepository;
 import com.oliwier.listmebackend.domain.repository.ShoppingListRepository;
 import com.oliwier.listmebackend.identity.CurrentDevice;
 import jakarta.validation.Valid;
@@ -31,6 +33,7 @@ public class ListController {
     private final ShoppingListRepository listRepository;
     private final ListDeviceRepository listDeviceRepository;
     private final ItemRepository itemRepository;
+    private final PresetItemRepository presetItemRepository;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -44,6 +47,25 @@ public class ListController {
 
         ListDevice ld = new ListDevice(list, device, "owner");
         list.getListDevices().add(ld);
+
+        // If a preset was specified, copy its items into the new list
+        if (req.presetId() != null) {
+            List<PresetItem> presetItems = presetItemRepository.findByPresetIdOrderByPosition(req.presetId());
+            for (PresetItem pi : presetItems) {
+                Item item = new Item();
+                item.setId(UUID.randomUUID());
+                item.setList(list);
+                item.setName(pi.getName());
+                item.setChecked(false);
+                item.setPosition(pi.getPosition());
+                item.setQuantity(pi.getQuantity());
+                item.setQuantityUnit(pi.getQuantityUnit());
+                item.setPrice(pi.getPrice());
+                item.setImageUrl(pi.getImageUrl());
+                item.setCreatedByDevice(device);
+                list.getItems().add(item);
+            }
+        }
 
         list = listRepository.save(list);
         return ListResponse.from(list);
@@ -113,13 +135,11 @@ public class ListController {
     public void delete(@PathVariable UUID listId, @CurrentDevice Device device) {
         ShoppingList list = requireAccess(listId, device);
 
-        // Remove this device from participants
         listDeviceRepository.findByListId(listId).stream()
                 .filter(ld -> ld.getDevice().getId().equals(device.getId()))
                 .findFirst()
                 .ifPresent(listDeviceRepository::delete);
 
-        // If no participants remain, delete the list entirely
         if (listDeviceRepository.findByListId(listId).isEmpty()) {
             listRepository.delete(list);
         }

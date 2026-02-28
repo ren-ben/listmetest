@@ -5,6 +5,7 @@ import JoinListView from '../views/JoinListView.vue'
 import SyncApplyView from '../views/SyncApplyView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import TrashView from '../views/TrashView.vue'
+import LibraryView from '../views/LibraryView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,6 +14,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    {
+      path: '/library',
+      name: 'library',
+      component: LibraryView,
     },
     {
       path: '/list/:id',

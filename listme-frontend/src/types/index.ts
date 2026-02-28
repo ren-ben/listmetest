@@ -90,6 +90,7 @@ export interface Participant {
 export interface CreateListRequest {
   name: string
   emoji?: string
+  presetId?: string | null
 }
 
 export interface UpdateListRequest {

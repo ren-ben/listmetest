@@ -8,12 +8,13 @@ const route = useRoute()
 const tabs = [
   { id: 'home', label: 'Listen', icon: 'lists', to: '/' },
   { id: 'favorites', label: 'Favoriten', icon: 'heart', to: null },
-  { id: 'friends', label: 'Freunde', icon: 'users', to: null },
+  { id: 'library', label: 'Bibliothek', icon: 'library', to: '/library' },
   { id: 'settings', label: 'Einstellungen', icon: 'settings', to: '/settings' },
 ] as const
 
 const active = computed(() => {
   if (route.name === 'home') return 'home'
+  if (route.name === 'library') return 'library'
   if (route.name === 'settings') return 'settings'
   return null
 })
@@ -54,12 +55,12 @@ function onTab(tab: typeof tabs[number]) {
           <path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 000-7.8z" />
         </svg>
 
-        <!-- Users icon -->
-        <svg v-if="tab.icon === 'users'" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 00-3-3.87" />
-          <path d="M16 3.13a4 4 0 010 7.75" />
+        <!-- Library icon -->
+        <svg v-if="tab.icon === 'library'" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4v16" />
+          <path d="M8 4v16" />
+          <path d="M12 4v16" />
+          <path d="M16 6l4 14" />
         </svg>
 
         <!-- Settings icon -->

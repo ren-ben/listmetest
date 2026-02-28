@@ -97,6 +97,19 @@
             </svg>
           </button>
 
+          <!-- Save as preset button -->
+          <button
+            v-if="list"
+            @click="openSavePreset"
+            class="p-2 rounded-xl text-ctp-subtext0 hover:text-ctp-yellow hover:bg-ctp-surface0 transition-colors"
+            aria-label="Als Vorlage speichern"
+            title="Als Vorlage speichern"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+          </button>
+
           <!-- Share button -->
           <button
             v-if="list"
@@ -220,6 +233,42 @@
       :list="list"
       @token-changed="onTokenChanged"
     />
+
+    <!-- Save as preset sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showSavePreset" class="fixed inset-0 z-50 flex flex-col justify-end">
+          <div class="absolute inset-0 bg-ctp-crust/60 backdrop-blur-sm" @click="showSavePreset = false" />
+          <div class="relative bg-ctp-mantle border-t border-ctp-surface0 rounded-t-3xl px-5 pt-4 pb-10 safe-bottom max-w-lg mx-auto w-full">
+            <div class="w-10 h-1 bg-ctp-surface1 rounded-full mx-auto mb-4" />
+            <p class="text-base font-semibold text-ctp-text mb-4">Als Vorlage speichern</p>
+            <input
+              ref="presetNameRef"
+              v-model="presetName"
+              type="text"
+              placeholder="Name der Vorlage…"
+              maxlength="100"
+              class="w-full px-4 py-3 rounded-xl bg-ctp-surface0 border border-ctp-surface1 text-ctp-text placeholder-ctp-overlay0 outline-none focus:border-ctp-teal focus:ring-2 focus:ring-ctp-teal/20 mb-4"
+              @keydown.enter="doSavePreset"
+            />
+            <div v-if="presetSaved" class="mb-4 text-sm text-ctp-green flex items-center gap-2">
+              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Vorlage gespeichert
+            </div>
+            <div class="flex gap-3">
+              <button @click="showSavePreset = false" class="flex-1 py-3 rounded-xl bg-ctp-surface0 text-ctp-subtext0 text-sm font-medium">Abbrechen</button>
+              <button
+                @click="doSavePreset"
+                :disabled="!presetName.trim() || savingPreset"
+                class="flex-1 py-3 rounded-xl bg-ctp-yellow text-ctp-base text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+              >{{ savingPreset ? 'Speichern…' : 'Speichern' }}</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -231,6 +280,7 @@ import { useItemsStore } from '../stores/items'
 import { usePresenceStore } from '../stores/presence'
 import { useListSync } from '../composables/useListSync'
 import { exportService } from '../services/export'
+import { presetService } from '../services/preset'
 import ItemRow from '../components/item/ItemRow.vue'
 import AddItemSheet from '../components/item/AddItemSheet.vue'
 import BudgetBar from '../components/list/BudgetBar.vue'
@@ -277,6 +327,33 @@ const showAddSheet = ref(false)
 const showShareModal = ref(false)
 const showExportMenu = ref(false)
 const editingItem = ref<Item | null>(null)
+
+const showSavePreset = ref(false)
+const presetName = ref('')
+const presetNameRef = ref<HTMLInputElement | null>(null)
+const savingPreset = ref(false)
+const presetSaved = ref(false)
+
+function openSavePreset() {
+  presetName.value = list.value?.name ?? ''
+  presetSaved.value = false
+  showSavePreset.value = true
+  nextTick(() => presetNameRef.value?.focus())
+}
+
+async function doSavePreset() {
+  if (!presetName.value.trim() || savingPreset.value || !list.value) return
+  savingPreset.value = true
+  try {
+    await presetService.create({ name: presetName.value.trim(), emoji: list.value.emoji, fromListId: listId })
+    presetSaved.value = true
+    setTimeout(() => { showSavePreset.value = false }, 1200)
+  } catch {
+    // ignore
+  } finally {
+    savingPreset.value = false
+  }
+}
 
 async function doExport(format: 'csv' | 'pdf') {
   showExportMenu.value = false
@@ -361,4 +438,7 @@ async function deleteItem(itemId: string) {
   opacity: 1;
   max-height: 60px;
 }
+.sheet-enter-active { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease; }
+.sheet-leave-active { transition: transform 0.25s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease; }
+.sheet-enter-from, .sheet-leave-to { transform: translateY(100%); opacity: 0; }
 </style>
