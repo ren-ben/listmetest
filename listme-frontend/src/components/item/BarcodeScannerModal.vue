@@ -34,9 +34,19 @@
 
           <!-- Found overlay -->
           <Transition name="found">
-            <div v-if="foundProduct" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent pt-8 pb-6 px-6 text-center">
-              <p class="text-white font-semibold text-lg mb-1">{{ foundProduct }}</p>
-              <p class="text-white/60 text-sm mb-4">Gefunden · Barcode: {{ lastBarcode }}</p>
+            <div v-if="foundProduct" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent pt-8 pb-6 px-6">
+              <div class="flex items-center gap-3 mb-3">
+                <img
+                  v-if="foundProduct.imageUrl"
+                  :src="foundProduct.imageUrl"
+                  class="w-14 h-14 rounded-xl object-cover bg-white/10 shrink-0"
+                  alt=""
+                />
+                <div class="min-w-0">
+                  <p class="text-white font-semibold text-base leading-tight truncate">{{ foundProduct.name }}</p>
+                  <p class="text-white/60 text-xs mt-0.5">{{ productSummary(foundProduct) || ('Barcode: ' + lastBarcode) }}</p>
+                </div>
+              </div>
               <div class="flex gap-3">
                 <button @click="rejectProduct" class="flex-1 py-3 rounded-xl bg-white/10 text-white text-sm font-medium">Abbrechen</button>
                 <button @click="acceptProduct" class="flex-1 py-3 rounded-xl bg-ctp-teal text-ctp-base text-sm font-semibold">Übernehmen</button>
@@ -60,16 +70,23 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from 'vue'
 
+export interface ScannedProduct {
+  name: string
+  imageUrl: string | null
+  quantity: number | null
+  quantityUnit: string | null
+}
+
 const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
-  'scanned': [name: string]
+  'scanned': [product: ScannedProduct]
 }>()
 
 const videoEl = ref<HTMLVideoElement | null>(null)
 const scanning = ref(false)
 const unsupported = ref(false)
-const foundProduct = ref<string | null>(null)
+const foundProduct = ref<ScannedProduct | null>(null)
 const lastBarcode = ref('')
 const statusText = ref('Halte einen Barcode in den Rahmen')
 
@@ -133,19 +150,30 @@ async function detectLoop() {
   }
 }
 
+const UNIT_NORM: Record<string, string> = { g: 'g', kg: 'kg', ml: 'ml', l: 'L', cl: 'ml', stk: 'Stk.' }
+
 async function lookupBarcode(code: string) {
   try {
     const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`)
     const data = await res.json()
     if (data.status === 1 && data.product?.product_name) {
-      foundProduct.value = data.product.product_name
+      const p = data.product
+      // Prefer localized German name
+      const productName: string = p.product_name_de || p.product_name
+      // Prefer the 200px small variant to avoid loading a multi-MB original
+      const imageUrl: string | null = p.image_front_small_url ?? p.image_front_url ?? p.image_url ?? null
+      // Parse quantity: product_quantity is numeric, product_quantity_unit is the unit string
+      const qty: number | null = p.product_quantity ? Number(p.product_quantity) : null
+      const rawUnit: string = (p.product_quantity_unit ?? '').toLowerCase().trim()
+      const unit: string | null = UNIT_NORM[rawUnit] ?? (rawUnit || null)
+      foundProduct.value = { name: productName, imageUrl, quantity: qty, quantityUnit: unit }
       statusText.value = 'Produkt gefunden'
     } else {
-      foundProduct.value = code
+      foundProduct.value = { name: code, imageUrl: null, quantity: null, quantityUnit: null }
       statusText.value = 'Produkt unbekannt — Barcode übernehmen'
     }
   } catch {
-    foundProduct.value = code
+    foundProduct.value = { name: code, imageUrl: null, quantity: null, quantityUnit: null }
     statusText.value = 'Offline — Barcode als Name'
   }
 }
@@ -155,6 +183,13 @@ function acceptProduct() {
     emit('scanned', foundProduct.value)
     close()
   }
+}
+
+function productSummary(p: ScannedProduct): string {
+  const parts: string[] = []
+  if (p.quantity) parts.push(`${p.quantity} ${p.quantityUnit ?? ''}`.trim())
+  if (p.imageUrl) parts.push('📷 Bild')
+  return parts.join(' · ')
 }
 
 function rejectProduct() {

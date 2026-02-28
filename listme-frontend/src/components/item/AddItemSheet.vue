@@ -181,7 +181,7 @@ import { useItemsStore } from '../../stores/items'
 import LabelPicker from './LabelPicker.vue'
 import ImagePicker from './ImagePicker.vue'
 import VoiceInput from './VoiceInput.vue'
-import BarcodeScannerModal from './BarcodeScannerModal.vue'
+import BarcodeScannerModal, { type ScannedProduct } from './BarcodeScannerModal.vue'
 
 const UNITS = ['Stk.', 'kg', 'g', 'L', 'ml']
 
@@ -276,8 +276,13 @@ function fillFromFavorite(fav: Favorite) {
   nextTick(() => inputRef.value?.focus())
 }
 
-function onBarcodeScanned(productName: string) {
-  name.value = productName
+function onBarcodeScanned(product: ScannedProduct) {
+  name.value = product.name
+  if (product.quantity !== null) quantity.value = product.quantity
+  if (product.quantityUnit) {
+    quantityUnit.value = UNITS.find(u => u === product.quantityUnit) ?? product.quantityUnit
+  }
+  if (product.imageUrl) imageUrl.value = product.imageUrl
   nextTick(() => inputRef.value?.focus())
 }
 
