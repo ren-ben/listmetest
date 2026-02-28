@@ -7,5 +7,6 @@ public record ParticipantResponse(
         UUID deviceId,
         String role,
         Instant joinedAt,
-        String displayName
+        String displayName,
+        String profilePicture
 ) {}

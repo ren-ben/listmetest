@@ -42,8 +42,9 @@ const theirItems = computed(() => {
 
           <!-- Identity -->
           <div class="flex items-center gap-3 mb-5">
-            <div class="w-12 h-12 rounded-full bg-ctp-teal flex items-center justify-center text-ctp-base font-bold text-lg shrink-0">
-              {{ initials }}
+            <div class="w-12 h-12 rounded-full overflow-hidden bg-ctp-teal flex items-center justify-center text-ctp-base font-bold text-lg shrink-0">
+              <img v-if="participant.profilePicture" :src="participant.profilePicture" class="w-full h-full object-cover" alt="" />
+              <span v-else>{{ initials }}</span>
             </div>
             <div>
               <p class="font-semibold text-ctp-text">{{ name || 'Unbekanntes Gerät' }}</p>

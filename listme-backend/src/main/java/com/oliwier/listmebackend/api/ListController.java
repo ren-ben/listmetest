@@ -99,7 +99,7 @@ public class ListController {
     public List<ParticipantResponse> getParticipants(@PathVariable UUID listId, @CurrentDevice Device device) {
         requireAccess(listId, device);
         return listDeviceRepository.findByListId(listId).stream()
-                .map(ld -> new ParticipantResponse(ld.getDevice().getId(), ld.getRole(), ld.getJoinedAt(), ld.getDevice().getDisplayName()))
+                .map(ld -> new ParticipantResponse(ld.getDevice().getId(), ld.getRole(), ld.getJoinedAt(), ld.getDevice().getDisplayName(), ld.getDevice().getProfilePicture()))
                 .toList();
     }
 

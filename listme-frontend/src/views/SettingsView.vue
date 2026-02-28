@@ -125,7 +125,7 @@ async function handlePhotoUpload(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
   const dataUrl = await compressPhoto(file)
-  profileStore.savePhoto(dataUrl)
+  await profileStore.savePhoto(dataUrl)
   if (photoInput.value) photoInput.value.value = ''
 }
 

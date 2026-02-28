@@ -33,7 +33,7 @@ public class PriceService {
             BigDecimal lineTotal = item.getPrice();
             total = total.add(lineTotal);
 
-            String cat = item.getCategory() != null ? item.getCategory().getName() : "Sonstiges";
+            String cat = item.getCategory() != null ? item.getCategory().getName() : item.getName();
             byCategory.merge(cat, lineTotal, BigDecimal::add);
         }
 

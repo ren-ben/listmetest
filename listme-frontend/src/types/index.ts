@@ -75,6 +75,7 @@ export interface ParticipantResponse {
   role: string
   joinedAt: string
   displayName: string | null
+  profilePicture: string | null
 }
 
 // UI-only helpers

@@ -17,14 +17,6 @@
       </svg>
     </button>
 
-    <!-- Thumbnail (if image set) -->
-    <img
-      v-if="item.imageUrl"
-      :src="item.imageUrl"
-      :alt="item.name"
-      class="w-8 h-8 rounded-lg object-cover shrink-0"
-    />
-
     <!-- Name + category + quantity + price + labels -->
     <div class="flex-1 min-w-0">
       <span
@@ -51,6 +43,14 @@
         <LabelTag v-for="label in item.labels" :key="label.id" :label="label" />
       </div>
     </div>
+
+    <!-- Thumbnail (after text so names always align) -->
+    <img
+      v-if="item.imageUrl"
+      :src="item.imageUrl"
+      :alt="item.name"
+      class="w-8 h-8 rounded-lg object-cover shrink-0"
+    />
 
     <!-- Edit / Delete actions -->
     <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

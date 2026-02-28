@@ -32,6 +32,7 @@ public class DeviceController {
     public DeviceResponse updateMe(@CurrentDevice Device device,
                                    @Valid @RequestBody UpdateDeviceRequest req) {
         device.setDisplayName(req.displayName());
+        device.setProfilePicture(req.profilePicture());
         return DeviceResponse.from(deviceRepository.save(device));
     }
 

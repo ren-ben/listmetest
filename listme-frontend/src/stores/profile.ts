@@ -31,14 +31,16 @@ export const useProfileStore = defineStore('profile', () => {
     } catch { /* offline — local save is enough */ }
   }
 
-  function savePhoto(dataUrl: string) {
+  async function savePhoto(dataUrl: string) {
     photoDataUrl.value = dataUrl
     try { localStorage.setItem('profile:photo', dataUrl) } catch { /* quota exceeded */ }
+    try { await api.patch('/devices/me', { profilePicture: dataUrl }) } catch { /* offline */ }
   }
 
-  function removePhoto() {
+  async function removePhoto() {
     photoDataUrl.value = ''
     localStorage.removeItem('profile:photo')
+    try { await api.patch('/devices/me', { profilePicture: null }) } catch { /* offline */ }
   }
 
   async function init() {

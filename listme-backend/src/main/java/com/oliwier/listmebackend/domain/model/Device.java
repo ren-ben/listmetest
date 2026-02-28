@@ -19,6 +19,9 @@ public class Device {
     @Column(name = "display_name", length = 100)
     private String displayName;
 
+    @Column(name = "profile_picture", columnDefinition = "TEXT")
+    private String profilePicture;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

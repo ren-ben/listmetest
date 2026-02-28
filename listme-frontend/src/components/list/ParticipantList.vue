@@ -40,12 +40,13 @@ function avatarColor(index: number) {
     <button
       v-for="(p, i) in visible"
       :key="p.deviceId"
-      class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-ctp-base shrink-0 -ml-1 first:ml-0 ring-1 ring-ctp-mantle transition-transform active:scale-90"
-      :class="avatarColor(i)"
+      class="w-6 h-6 rounded-full overflow-hidden shrink-0 -ml-1 first:ml-0 ring-1 ring-ctp-mantle transition-transform active:scale-90 flex items-center justify-center text-[10px] font-bold text-ctp-base"
+      :class="p.profilePicture ? '' : avatarColor(i)"
       :title="p.displayName || p.role"
       @click="emit('click-participant', p)"
     >
-      {{ avatarLetters(p) }}
+      <img v-if="p.profilePicture" :src="p.profilePicture" class="w-full h-full object-cover" alt="" />
+      <span v-else>{{ avatarLetters(p) }}</span>
     </button>
     <div
       v-if="overflow > 0"
