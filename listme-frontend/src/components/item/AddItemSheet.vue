@@ -281,20 +281,65 @@ function onBarcodeScanned(productName: string) {
   nextTick(() => inputRef.value?.focus())
 }
 
-function onVoiceResult(transcript: string) {
-  // Try to parse "2 kg Mehl" → name=Mehl, quantity=2, unit=kg
-  const match = transcript.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|L|ml|Stk\.?)?\s+(.+)$/i)
-  if (match) {
-    const [, qty, unit, itemName] = match as RegExpMatchArray
-    name.value = itemName!.trim()
-    quantity.value = parseFloat(qty!.replace(',', '.'))
-    if (unit) {
-      const normalized = unit.toLowerCase()
-      quantityUnit.value = UNITS.find(u => u.toLowerCase() === normalized) ?? unit
-    }
-  } else {
-    name.value = transcript
+// Maps spoken German unit words → canonical UNITS values
+const UNIT_MAP: Record<string, string> = {
+  kg: 'kg', kilo: 'kg', kilogramm: 'kg',
+  g: 'g', gramm: 'g',
+  l: 'L', liter: 'L', litre: 'L',
+  ml: 'ml', milliliter: 'ml',
+  stk: 'Stk.', 'stk.': 'Stk.', stück: 'Stk.', stücke: 'Stk.', stuck: 'Stk.',
+}
+const UNIT_PAT = Object.keys(UNIT_MAP).join('|')
+
+function parseVoice(raw: string): { name: string; qty: number | null; unit: string | null; price: number | null } {
+  let text = raw.trim()
+
+  // 1. Extract price: "1,99 Euro", "1.49 €", "für 3 Euro"
+  let price: number | null = null
+  const priceMatch = text.match(/(?:für\s+)?(\d+(?:[.,]\d+)?)\s*(?:€|euro|eur)\b/i)
+  if (priceMatch) {
+    price = parseFloat(priceMatch[1].replace(',', '.'))
+    text = text.replace(priceMatch[0], '').trim()
   }
+
+  let qty: number | null = null
+  let unit: string | null = null
+  let itemName = text
+
+  // 2. "[qty] [unit] [name]" — "2 kg Mehl"
+  const p1 = text.match(new RegExp(`^(\\d+(?:[.,]\\d+)?)\\s*(${UNIT_PAT})\\.?\\s+(.+)$`, 'i'))
+  if (p1) {
+    qty = parseFloat(p1[1]!.replace(',', '.'))
+    unit = UNIT_MAP[p1[2]!.toLowerCase().replace('.', '')] ?? p1[2]!
+    itemName = p1[3]!.trim()
+  } else {
+    // 3. "[name] [qty] [unit]" — "Maiswaffeln 2 Stück"
+    const p2 = text.match(new RegExp(`^(.+?)\\s+(\\d+(?:[.,]\\d+)?)\\s*(${UNIT_PAT})\\.?$`, 'i'))
+    if (p2) {
+      itemName = p2[1]!.trim()
+      qty = parseFloat(p2[2]!.replace(',', '.'))
+      unit = UNIT_MAP[p2[3]!.toLowerCase().replace('.', '')] ?? p2[3]!
+    } else {
+      // 4. "[name] [qty]" — "Äpfel 3"
+      const p3 = text.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)$/)
+      if (p3) {
+        itemName = p3[1]!.trim()
+        qty = parseFloat(p3[2]!.replace(',', '.'))
+      }
+    }
+  }
+
+  return { name: itemName, qty, unit, price }
+}
+
+function onVoiceResult(transcript: string) {
+  const parsed = parseVoice(transcript)
+  name.value = parsed.name
+  if (parsed.qty !== null) quantity.value = parsed.qty
+  if (parsed.unit) {
+    quantityUnit.value = UNITS.find(u => u === parsed.unit) ?? parsed.unit
+  }
+  if (parsed.price !== null) price.value = parsed.price
   nextTick(() => inputRef.value?.focus())
 }
 
