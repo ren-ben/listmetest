@@ -21,7 +21,7 @@ public class PriceService {
     private final ItemRepository itemRepository;
 
     public BudgetResponse getBudget(UUID listId) {
-        List<Item> unchecked = itemRepository.findByListIdOrderByPosition(listId)
+        List<Item> unchecked = itemRepository.findByListIdAndDeletedAtIsNullOrderByPosition(listId)
                 .stream()
                 .filter(i -> !i.isChecked() && i.getPrice() != null)
                 .toList();

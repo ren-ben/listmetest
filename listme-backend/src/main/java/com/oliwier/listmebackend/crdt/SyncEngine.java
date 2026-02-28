@@ -166,7 +166,7 @@ public class SyncEngine {
                     item.setList(list);
                     item.setName(name);
                     item.setChecked(false);
-                    item.setPosition(itemRepository.countByListId(list.getId()));
+                    item.setPosition(itemRepository.countByListIdAndDeletedAtIsNull(list.getId()));
                     item.setCreatedByDevice(device);
                     itemRepository.save(item);
                 }

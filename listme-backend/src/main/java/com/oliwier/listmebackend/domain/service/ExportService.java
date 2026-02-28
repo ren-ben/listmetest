@@ -28,7 +28,7 @@ public class ExportService {
 
     @Transactional(readOnly = true)
     public byte[] exportCsv(UUID listId) {
-        List<Item> items = itemRepository.findByListIdOrderByPosition(listId);
+        List<Item> items = itemRepository.findByListIdAndDeletedAtIsNullOrderByPosition(listId);
 
         StringBuilder sb = new StringBuilder();
         sb.append("Name,Menge,Einheit,Preis,Kategorie,Erledigt\n");
@@ -49,7 +49,7 @@ public class ExportService {
     public byte[] exportPdf(UUID listId) {
         ShoppingList list = listRepository.findById(listId)
                 .orElseThrow(() -> new IllegalArgumentException("List not found"));
-        List<Item> items = itemRepository.findByListIdOrderByPosition(listId);
+        List<Item> items = itemRepository.findByListIdAndDeletedAtIsNullOrderByPosition(listId);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Document doc = new Document(PageSize.A4, 40, 40, 50, 40);
