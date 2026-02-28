@@ -2,7 +2,7 @@ CREATE TABLE presets (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name        VARCHAR(100) NOT NULL,
     emoji       VARCHAR(10)  NOT NULL DEFAULT '📋',
-    created_by_device VARCHAR(255) REFERENCES devices(id) ON DELETE SET NULL,
+    created_by_device UUID REFERENCES devices(id) ON DELETE SET NULL,
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
