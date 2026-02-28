@@ -129,7 +129,7 @@
                 class="w-28 bg-ctp-surface0 border border-ctp-surface1 rounded-xl pl-7 pr-3 py-2 text-sm text-ctp-text placeholder-ctp-overlay0 focus:outline-none focus:border-ctp-teal transition-colors"
               />
             </div>
-            <span class="text-xs text-ctp-overlay0">Preis pro Einheit</span>
+            <span class="text-xs text-ctp-overlay0">Preis gesamt</span>
           </div>
 
           <!-- Image picker -->

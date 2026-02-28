@@ -124,10 +124,7 @@ public class ExportService {
             // Total line
             BigDecimal total = items.stream()
                     .filter(it -> !it.isChecked() && it.getPrice() != null)
-                    .map(it -> {
-                        BigDecimal qty = it.getQuantity() != null ? it.getQuantity() : BigDecimal.ONE;
-                        return it.getPrice().multiply(qty);
-                    })
+                    .map(Item::getPrice)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             if (total.compareTo(BigDecimal.ZERO) > 0) {

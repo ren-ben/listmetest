@@ -30,8 +30,7 @@ public class PriceService {
         Map<String, BigDecimal> byCategory = new LinkedHashMap<>();
 
         for (Item item : unchecked) {
-            BigDecimal qty = item.getQuantity() != null ? item.getQuantity() : BigDecimal.ONE;
-            BigDecimal lineTotal = item.getPrice().multiply(qty);
+            BigDecimal lineTotal = item.getPrice();
             total = total.add(lineTotal);
 
             String cat = item.getCategory() != null ? item.getCategory().getName() : "Sonstiges";
