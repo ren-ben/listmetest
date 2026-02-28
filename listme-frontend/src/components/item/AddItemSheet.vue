@@ -285,21 +285,35 @@ function onBarcodeScanned(productName: string) {
 const UNIT_MAP: Record<string, string> = {
   kg: 'kg', kilo: 'kg', kilogramm: 'kg',
   g: 'g', gramm: 'g',
-  l: 'L', liter: 'L', litre: 'L',
+  l: 'L', liter: 'L',
   ml: 'ml', milliliter: 'ml',
-  stk: 'Stk.', 'stk.': 'Stk.', stück: 'Stk.', stücke: 'Stk.', stuck: 'Stk.',
+  stk: 'Stk.', stück: 'Stk.', stücke: 'Stk.', stuck: 'Stk.',
 }
-const UNIT_PAT = Object.keys(UNIT_MAP).join('|')
+// Escape for use in regex alternation
+const UNIT_PAT = Object.keys(UNIT_MAP).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+
+// German number words → digits (speech recognition sometimes returns words)
+const NUM_WORDS: Record<string, number> = {
+  null: 0, ein: 1, eine: 1, einer: 1, einem: 1, einen: 1,
+  zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6,
+  sieben: 7, acht: 8, neun: 9, zehn: 10, elf: 11, zwölf: 12,
+}
+function toDigits(text: string): string {
+  const pat = new RegExp(`\\b(${Object.keys(NUM_WORDS).join('|')})\\b`, 'gi')
+  return text.replace(pat, m => String(NUM_WORDS[m.toLowerCase()] ?? m))
+}
 
 function parseVoice(raw: string): { name: string; qty: number | null; unit: string | null; price: number | null } {
-  let text = raw.trim()
+  // Convert number words first so "zwei" → "2" before pattern matching
+  let text = toDigits(raw.trim())
 
-  // 1. Extract price: "1,99 Euro", "1.49 €", "für 3 Euro"
+  // 1. Extract price: "1,99 Euro", "15 €", "für 3 Euro"
+  // Use (?!\w) instead of \b because € is not a word character
   let price: number | null = null
-  const priceMatch = text.match(/(?:für\s+)?(\d+(?:[.,]\d+)?)\s*(?:€|euro|eur)\b/i)
+  const priceMatch = text.match(/(?:für\s+)?(\d+(?:[.,]\d+)?)\s*(?:€|euro|eur)(?!\w)/i)
   if (priceMatch) {
     price = parseFloat(priceMatch[1]!.replace(',', '.'))
-    text = text.replace(priceMatch[0], '').trim()
+    text = text.replace(priceMatch[0], '').trim().replace(/\s{2,}/g, ' ')
   }
 
   let qty: number | null = null
@@ -310,7 +324,7 @@ function parseVoice(raw: string): { name: string; qty: number | null; unit: stri
   const p1 = text.match(new RegExp(`^(\\d+(?:[.,]\\d+)?)\\s*(${UNIT_PAT})\\.?\\s+(.+)$`, 'i'))
   if (p1) {
     qty = parseFloat(p1[1]!.replace(',', '.'))
-    unit = UNIT_MAP[p1[2]!.toLowerCase().replace('.', '')] ?? p1[2]!
+    unit = UNIT_MAP[p1[2]!.toLowerCase()] ?? p1[2]!
     itemName = p1[3]!.trim()
   } else {
     // 3. "[name] [qty] [unit]" — "Maiswaffeln 2 Stück"
@@ -318,7 +332,7 @@ function parseVoice(raw: string): { name: string; qty: number | null; unit: stri
     if (p2) {
       itemName = p2[1]!.trim()
       qty = parseFloat(p2[2]!.replace(',', '.'))
-      unit = UNIT_MAP[p2[3]!.toLowerCase().replace('.', '')] ?? p2[3]!
+      unit = UNIT_MAP[p2[3]!.toLowerCase()] ?? p2[3]!
     } else {
       // 4. "[name] [qty]" — "Äpfel 3"
       const p3 = text.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)$/)
