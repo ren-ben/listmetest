@@ -108,6 +108,7 @@ function applyOp(listId: string, op: CrdtOperation, itemsStore: ReturnType<typeo
         labels: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        deletedAt: null,
       }
       itemsStore.itemsByList[listId] = [...items, newItem]
       break
