@@ -3,8 +3,6 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AppHeader from './components/common/AppHeader.vue'
 import BottomNav from './components/common/BottomNav.vue'
-import HelloKittyMascot from './components/common/HelloKittyMascot.vue'
-import HKBackground from './components/common/HKBackground.vue'
 import { useOffline } from './composables/useOffline'
 import { useSyncQueue } from './composables/useSyncQueue'
 
@@ -64,10 +62,6 @@ const offlineBannerClass = computed(() =>
     </main>
 
     <BottomNav v-if="!hideChrome" />
-
-    <!-- Hello Kitty easter egg components (Teleport to body internally) -->
-    <HelloKittyMascot />
-    <HKBackground />
   </div>
 </template>
 

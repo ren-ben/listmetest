@@ -216,7 +216,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useListsStore } from '../stores/lists'
 import { useItemsStore } from '../stores/items'
 import { usePresenceStore } from '../stores/presence'
-import { useThemeStore } from '../stores/theme'
 import { useListSync } from '../composables/useListSync'
 import { exportService } from '../services/export'
 import ItemRow from '../components/item/ItemRow.vue'
@@ -235,12 +234,7 @@ const listId = route.params.id as string
 const listsStore = useListsStore()
 const itemsStore = useItemsStore()
 const presenceStore = usePresenceStore()
-const themeStore = useThemeStore()
 const { connected: syncConnected, conflicts, dismissConflicts, startSync } = useListSync()
-
-const createSpeeches = ['Yay, einkaufen! 🛒', 'Sugoi~ ✨', 'Itadakimasu! 🍓', 'Kawaii Liste~ 🎀', 'Nya~ hinzugefügt! 💕']
-const checkSpeeches  = ['Erledigt! 🌸', 'Sugoi desu! ⭐', 'Yatta! 🎉', 'So fleißig~ 💗', 'Kanpeki! ✨']
-const randOf = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
 
 const list = computed(() => listsStore.getById(listId))
 const items = computed(() => itemsStore.getItems(listId))
@@ -303,12 +297,8 @@ function startEdit(item: Item) {
 }
 
 async function onToggle(lid: string, itemId: string) {
-  const wasChecked = items.value.find(i => i.id === itemId)?.checked
   await itemsStore.toggleCheck(lid, itemId)
   itemsVersion.value++
-  if (!wasChecked) {
-    themeStore.triggerMascot('celebrate', randOf(checkSpeeches), 2800)
-  }
 }
 
 async function handleItemSubmit(payload: { name: string; quantity: number | null; quantityUnit: string | null; labelIds: string[]; price: number | null; imageUrl: string | null }) {
@@ -331,7 +321,6 @@ async function handleItemSubmit(payload: { name: string; quantity: number | null
       price: payload.price,
       imageUrl: payload.imageUrl,
     })
-    themeStore.triggerMascot('dance', randOf(createSpeeches), 2400)
   }
   itemsVersion.value++
 }
