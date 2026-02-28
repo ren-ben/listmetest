@@ -23,7 +23,7 @@ const overflow = computed(() => Math.max(0, participants.value.length - MAX_VISI
 function avatarLetters(p: ParticipantResponse): string {
   if (p.displayName) {
     const parts = p.displayName.trim().split(/\s+/)
-    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    if (parts.length >= 2) return (parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)).toUpperCase()
     return p.displayName.slice(0, 2).toUpperCase()
   }
   return p.deviceId.charAt(0).toUpperCase()

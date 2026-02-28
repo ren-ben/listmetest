@@ -15,7 +15,7 @@ const initials = computed(() => {
   if (!props.participant) return ''
   if (name.value) {
     const parts = name.value.trim().split(/\s+/)
-    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    if (parts.length >= 2) return (parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)).toUpperCase()
     return name.value.slice(0, 2).toUpperCase()
   }
   return props.participant.deviceId.charAt(0).toUpperCase()

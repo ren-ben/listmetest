@@ -15,7 +15,7 @@ export const useProfileStore = defineStore('profile', () => {
   const initials = computed(() => {
     const f = firstName.value.trim()
     const l = lastName.value.trim()
-    if (f && l) return (f[0] + l[0]).toUpperCase()
+    if (f && l) return (f.charAt(0) + l.charAt(0)).toUpperCase()
     if (f) return f.slice(0, 2).toUpperCase()
     return '?'
   })
