@@ -6,5 +6,6 @@ import java.util.UUID;
 public record ParticipantResponse(
         UUID deviceId,
         String role,
-        Instant joinedAt
+        Instant joinedAt,
+        String displayName
 ) {}

@@ -23,7 +23,8 @@ public record ItemResponse(
         List<LabelResponse> labels,
         Instant createdAt,
         Instant updatedAt,
-        Instant deletedAt
+        Instant deletedAt,
+        UUID createdByDeviceId
 ) {
     public static ItemResponse from(Item item) {
         return new ItemResponse(
@@ -42,7 +43,8 @@ public record ItemResponse(
                 item.getLabels().stream().map(LabelResponse::from).toList(),
                 item.getCreatedAt(),
                 item.getUpdatedAt(),
-                item.getDeletedAt()
+                item.getDeletedAt(),
+                item.getCreatedByDevice() != null ? item.getCreatedByDevice().getId() : null
         );
     }
 }

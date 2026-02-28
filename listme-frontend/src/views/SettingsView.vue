@@ -6,6 +6,31 @@
       <h2 class="text-2xl font-bold text-ctp-text mt-0.5">Einstellungen</h2>
     </div>
 
+    <!-- Profile section -->
+    <section class="mb-6 animate-fade-up">
+      <p class="text-xs font-semibold text-ctp-overlay0 uppercase tracking-wider mb-3 px-1">Profil</p>
+      <div class="bg-ctp-surface0/60 border border-ctp-surface1/40 rounded-2xl p-4">
+        <!-- Avatar + photo controls -->
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-16 h-16 rounded-full overflow-hidden bg-ctp-surface1 border-2 border-ctp-surface2 flex items-center justify-center shrink-0">
+            <img v-if="profileStore.photoDataUrl" :src="profileStore.photoDataUrl" class="w-full h-full object-cover" alt="" />
+            <span v-else class="text-xl font-bold text-ctp-subtext0">{{ profileStore.initials }}</span>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <button @click="photoInput?.click()" class="text-xs font-medium text-ctp-teal hover:text-ctp-sapphire transition-colors text-left">Bild ändern</button>
+            <button v-if="profileStore.photoDataUrl" @click="profileStore.removePhoto()" class="text-xs text-ctp-overlay0 hover:text-ctp-red transition-colors text-left">Bild entfernen</button>
+          </div>
+          <input ref="photoInput" type="file" accept="image/*" class="hidden" @change="handlePhotoUpload" />
+        </div>
+        <!-- Name fields -->
+        <div class="space-y-2.5">
+          <input v-model="firstName" type="text" placeholder="Vorname" maxlength="50" class="w-full px-3 py-2.5 rounded-xl bg-ctp-surface1 border border-ctp-surface2 text-ctp-text placeholder-ctp-overlay0 text-sm outline-none focus:border-ctp-teal focus:ring-2 focus:ring-ctp-teal/20 transition-all" />
+          <input v-model="lastName" type="text" placeholder="Nachname" maxlength="50" class="w-full px-3 py-2.5 rounded-xl bg-ctp-surface1 border border-ctp-surface2 text-ctp-text placeholder-ctp-overlay0 text-sm outline-none focus:border-ctp-teal focus:ring-2 focus:ring-ctp-teal/20 transition-all" @keydown.enter="saveProfile" />
+          <button @click="saveProfile" :disabled="saving" class="w-full py-2.5 rounded-xl bg-ctp-teal text-ctp-base text-sm font-semibold disabled:opacity-40 transition-opacity">{{ saved ? 'Gespeichert ✓' : saving ? 'Speichern…' : 'Speichern' }}</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Appearance section -->
     <section class="mb-6 animate-fade-up" style="animation-delay: 60ms">
       <p class="text-xs font-semibold text-ctp-overlay0 uppercase tracking-wider mb-3 px-1">
@@ -73,9 +98,52 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
+import { useProfileStore } from '../stores/profile'
 
 const themeStore = useThemeStore()
+const profileStore = useProfileStore()
 const isDark = computed(() => themeStore.theme === 'dark')
+
+const firstName = ref(profileStore.firstName)
+const lastName = ref(profileStore.lastName)
+const saving = ref(false)
+const saved = ref(false)
+const photoInput = ref<HTMLInputElement | null>(null)
+
+async function saveProfile() {
+  saving.value = true
+  saved.value = false
+  await profileStore.save(firstName.value, lastName.value)
+  saving.value = false
+  saved.value = true
+  setTimeout(() => { saved.value = false }, 2000)
+}
+
+async function handlePhotoUpload(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const dataUrl = await compressPhoto(file)
+  profileStore.savePhoto(dataUrl)
+  if (photoInput.value) photoInput.value.value = ''
+}
+
+function compressPhoto(file: File): Promise<string> {
+  return new Promise(resolve => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const SIZE = 256
+      const ratio = Math.min(SIZE / img.width, SIZE / img.height, 1)
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.width * ratio)
+      canvas.height = Math.round(img.height * ratio)
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      resolve(canvas.toDataURL('image/jpeg', 0.82))
+    }
+    img.src = url
+  })
+}
 </script>

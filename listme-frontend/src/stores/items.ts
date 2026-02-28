@@ -80,6 +80,7 @@ export const useItemsStore = defineStore('items', () => {
         createdAt: now,
         updatedAt: now,
         deletedAt: null,
+        createdByDeviceId: null,
       }
       if (!itemsByList.value[listId]) itemsByList.value[listId] = []
       itemsByList.value[listId].push(item)

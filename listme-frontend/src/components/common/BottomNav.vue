@@ -7,7 +7,6 @@ const route = useRoute()
 
 const tabs = [
   { id: 'home', label: 'Listen', icon: 'lists', to: '/' },
-  { id: 'favorites', label: 'Favoriten', icon: 'heart', to: null },
   { id: 'library', label: 'Bibliothek', icon: 'library', to: '/library' },
   { id: 'settings', label: 'Einstellungen', icon: 'settings', to: '/settings' },
 ] as const

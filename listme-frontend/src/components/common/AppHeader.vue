@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useProfileStore } from '../../stores/profile'
 
+const router = useRouter()
+const profileStore = useProfileStore()
 const scrolled = ref(false)
 
 onMounted(() => {
@@ -27,9 +31,14 @@ onMounted(() => {
         <h1 class="text-lg font-semibold text-ctp-text tracking-tight">ListMe</h1>
       </div>
 
-      <!-- Avatar -->
-      <button class="pressable w-9 h-9 rounded-full bg-ctp-surface0 border border-ctp-surface1 flex items-center justify-center">
-        <span class="text-xs font-semibold text-ctp-subtext0">OG</span>
+      <!-- Avatar (clickable → Settings) -->
+      <button
+        @click="router.push('/settings')"
+        class="pressable w-9 h-9 rounded-full overflow-hidden bg-ctp-surface0 border border-ctp-surface1 flex items-center justify-center shrink-0"
+        aria-label="Profil & Einstellungen"
+      >
+        <img v-if="profileStore.photoDataUrl" :src="profileStore.photoDataUrl" class="w-full h-full object-cover" alt="" />
+        <span v-else class="text-xs font-semibold text-ctp-subtext0">{{ profileStore.initials }}</span>
       </button>
     </div>
   </header>

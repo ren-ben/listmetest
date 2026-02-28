@@ -1,0 +1,52 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import api from '../services/api'
+
+export const useProfileStore = defineStore('profile', () => {
+  const firstName = ref(localStorage.getItem('profile:firstName') ?? '')
+  const lastName = ref(localStorage.getItem('profile:lastName') ?? '')
+  const photoDataUrl = ref(localStorage.getItem('profile:photo') ?? '')
+
+  const displayName = computed(() => {
+    const parts = [firstName.value.trim(), lastName.value.trim()].filter(Boolean)
+    return parts.join(' ')
+  })
+
+  const initials = computed(() => {
+    const f = firstName.value.trim()
+    const l = lastName.value.trim()
+    if (f && l) return (f[0] + l[0]).toUpperCase()
+    if (f) return f.slice(0, 2).toUpperCase()
+    return '?'
+  })
+
+  async function save(first: string, last: string) {
+    firstName.value = first
+    lastName.value = last
+    localStorage.setItem('profile:firstName', first)
+    localStorage.setItem('profile:lastName', last)
+    const name = [first.trim(), last.trim()].filter(Boolean).join(' ')
+    try {
+      await api.patch('/devices/me', { displayName: name || null })
+    } catch { /* offline — local save is enough */ }
+  }
+
+  function savePhoto(dataUrl: string) {
+    photoDataUrl.value = dataUrl
+    try { localStorage.setItem('profile:photo', dataUrl) } catch { /* quota exceeded */ }
+  }
+
+  function removePhoto() {
+    photoDataUrl.value = ''
+    localStorage.removeItem('profile:photo')
+  }
+
+  async function init() {
+    const name = displayName.value
+    if (name) {
+      try { await api.patch('/devices/me', { displayName: name }) } catch { /* ignore */ }
+    }
+  }
+
+  return { firstName, lastName, displayName, initials, photoDataUrl, save, savePhoto, removePhoto, init }
+})

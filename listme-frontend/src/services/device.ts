@@ -1,4 +1,16 @@
 import Dexie from 'dexie'
+import api from './api'
+
+export interface DeviceInfo {
+  id: string
+  displayName: string | null
+  createdAt: string
+}
+
+export const deviceService = {
+  get: (deviceId: string): Promise<DeviceInfo> =>
+    api.get<DeviceInfo>(`/devices/${deviceId}`).then(r => r.data),
+}
 
 class DeviceDb extends Dexie {
   meta!: Dexie.Table<{ key: string; value: string }, string>

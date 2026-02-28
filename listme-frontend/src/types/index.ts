@@ -41,6 +41,7 @@ export interface Item {
   createdAt: string
   updatedAt: string
   deletedAt: string | null
+  createdByDeviceId: string | null
 }
 
 export interface BudgetSummary {
@@ -73,6 +74,7 @@ export interface ParticipantResponse {
   deviceId: string
   role: string
   joinedAt: string
+  displayName: string | null
 }
 
 // UI-only helpers

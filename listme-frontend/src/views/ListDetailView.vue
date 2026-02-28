@@ -139,7 +139,7 @@
       </Transition>
 
       <!-- Participant avatars (only shown when list has >1 participant) -->
-      <ParticipantList :list-id="listId" />
+      <ParticipantList :list-id="listId" @click-participant="selectedParticipant = $event" />
 
       <!-- Progress bar -->
       <div v-if="list && list.itemCount > 0" class="h-0.5 bg-ctp-surface0 mx-4 rounded-full overflow-hidden">
@@ -234,6 +234,12 @@
       @token-changed="onTokenChanged"
     />
 
+    <ParticipantSheet
+      :participant="selectedParticipant"
+      :items="items"
+      @close="selectedParticipant = null"
+    />
+
     <!-- Save as preset sheet -->
     <Teleport to="body">
       <Transition name="sheet">
@@ -287,8 +293,9 @@ import BudgetBar from '../components/list/BudgetBar.vue'
 import ConnectionBanner from '../components/common/ConnectionBanner.vue'
 import ConflictBanner from '../components/list/ConflictBanner.vue'
 import ParticipantList from '../components/list/ParticipantList.vue'
+import ParticipantSheet from '../components/list/ParticipantSheet.vue'
 import ShareListModal from '../components/list/ShareListModal.vue'
-import type { Item } from '../types'
+import type { Item, ParticipantResponse } from '../types'
 
 const route = useRoute()
 const router = useRouter()
@@ -327,6 +334,7 @@ const showAddSheet = ref(false)
 const showShareModal = ref(false)
 const showExportMenu = ref(false)
 const editingItem = ref<Item | null>(null)
+const selectedParticipant = ref<ParticipantResponse | null>(null)
 
 const showSavePreset = ref(false)
 const presetName = ref('')

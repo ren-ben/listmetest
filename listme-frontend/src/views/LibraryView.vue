@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-ctp-base pb-28">
+  <div class="min-h-screen bg-ctp-base pb-28 pt-14">
     <!-- Header -->
-    <div class="sticky top-0 z-30 bg-ctp-mantle/80 backdrop-blur-xl border-b border-ctp-surface0 safe-top">
+    <div class="sticky top-14 z-30 bg-ctp-mantle/80 backdrop-blur-xl border-b border-ctp-surface0">
       <div class="max-w-lg mx-auto px-4 h-14 flex items-center gap-3">
         <span class="text-lg font-bold text-ctp-text flex-1">Bibliothek</span>
       </div>
