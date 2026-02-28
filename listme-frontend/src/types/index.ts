@@ -40,6 +40,7 @@ export interface Item {
   labels: Label[]
   createdAt: string
   updatedAt: string
+  deletedAt: string | null
 }
 
 export interface BudgetSummary {

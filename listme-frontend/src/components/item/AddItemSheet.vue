@@ -285,9 +285,9 @@ function onVoiceResult(transcript: string) {
   // Try to parse "2 kg Mehl" → name=Mehl, quantity=2, unit=kg
   const match = transcript.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|L|ml|Stk\.?)?\s+(.+)$/i)
   if (match) {
-    const [, qty, unit, itemName] = match
-    name.value = itemName.trim()
-    quantity.value = parseFloat(qty.replace(',', '.'))
+    const [, qty, unit, itemName] = match as RegExpMatchArray
+    name.value = itemName!.trim()
+    quantity.value = parseFloat(qty!.replace(',', '.'))
     if (unit) {
       const normalized = unit.toLowerCase()
       quantityUnit.value = UNITS.find(u => u.toLowerCase() === normalized) ?? unit
