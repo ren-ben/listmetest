@@ -20,33 +20,38 @@ export const useProfileStore = defineStore('profile', () => {
     return '?'
   })
 
+  function buildPatch(nameOverride?: string | null, photoOverride?: string | null) {
+    const name = nameOverride !== undefined ? nameOverride : (displayName.value || null)
+    const photo = photoOverride !== undefined ? photoOverride : (photoDataUrl.value || null)
+    return { displayName: name, profilePicture: photo }
+  }
+
   async function save(first: string, last: string) {
     firstName.value = first
     lastName.value = last
     localStorage.setItem('profile:firstName', first)
     localStorage.setItem('profile:lastName', last)
     const name = [first.trim(), last.trim()].filter(Boolean).join(' ')
-    try {
-      await api.patch('/devices/me', { displayName: name || null })
-    } catch { /* offline — local save is enough */ }
+    try { await api.patch('/devices/me', buildPatch(name || null)) } catch { /* offline */ }
   }
 
   async function savePhoto(dataUrl: string) {
     photoDataUrl.value = dataUrl
     try { localStorage.setItem('profile:photo', dataUrl) } catch { /* quota exceeded */ }
-    try { await api.patch('/devices/me', { profilePicture: dataUrl }) } catch { /* offline */ }
+    try { await api.patch('/devices/me', buildPatch(undefined, dataUrl)) } catch { /* offline */ }
   }
 
   async function removePhoto() {
     photoDataUrl.value = ''
     localStorage.removeItem('profile:photo')
-    try { await api.patch('/devices/me', { profilePicture: null }) } catch { /* offline */ }
+    try { await api.patch('/devices/me', buildPatch(undefined, null)) } catch { /* offline */ }
   }
 
   async function init() {
-    const name = displayName.value
-    if (name) {
-      try { await api.patch('/devices/me', { displayName: name }) } catch { /* ignore */ }
+    const name = displayName.value || null
+    const photo = photoDataUrl.value || null
+    if (name || photo) {
+      try { await api.patch('/devices/me', { displayName: name, profilePicture: photo }) } catch { /* ignore */ }
     }
   }
 
