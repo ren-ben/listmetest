@@ -28,7 +28,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
                 i.name, i.quantity_unit, i.price, i.image_url
             FROM items i
             JOIN list_devices ld ON ld.list_id = i.list_id
-            WHERE ld.device_id = :deviceId
+            WHERE ld.device_id = CAST(:deviceId AS uuid)
               AND (:prefix = '' OR lower(i.name) LIKE lower(:prefix) || '%')
               AND i.deleted_at IS NULL
             ORDER BY lower(i.name), i.created_at DESC
