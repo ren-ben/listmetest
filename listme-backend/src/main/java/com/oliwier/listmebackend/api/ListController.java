@@ -53,7 +53,6 @@ public class ListController {
             List<PresetItem> presetItems = presetItemRepository.findByPresetIdOrderByPosition(req.presetId());
             for (PresetItem pi : presetItems) {
                 Item item = new Item();
-                item.setId(UUID.randomUUID());
                 item.setList(list);
                 item.setName(pi.getName());
                 item.setChecked(false);
