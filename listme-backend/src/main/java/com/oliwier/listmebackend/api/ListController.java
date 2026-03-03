@@ -8,8 +8,6 @@ import com.oliwier.listmebackend.domain.model.Device;
 import com.oliwier.listmebackend.domain.model.Item;
 import com.oliwier.listmebackend.domain.model.ListDevice;
 import com.oliwier.listmebackend.domain.model.PresetItem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.oliwier.listmebackend.domain.model.ShoppingList;
 import com.oliwier.listmebackend.domain.repository.ItemRepository;
 import com.oliwier.listmebackend.domain.repository.ListDeviceRepository;
@@ -32,8 +30,6 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class ListController {
 
-    private static final Logger log = LoggerFactory.getLogger(ListController.class);
-
     private final ShoppingListRepository listRepository;
     private final ListDeviceRepository listDeviceRepository;
     private final ItemRepository itemRepository;
@@ -43,7 +39,6 @@ public class ListController {
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
     public ListResponse create(@CurrentDevice Device device, @Valid @RequestBody CreateListRequest req) {
-        log.info("CREATE LIST: name={}, presetId={}", req.name(), req.presetId());
         ShoppingList list = new ShoppingList();
         list.setId(UUID.randomUUID());
         list.setName(req.name());
@@ -59,7 +54,6 @@ public class ListController {
         int itemCount = 0;
         if (req.presetId() != null) {
             List<PresetItem> presetItems = presetItemRepository.findByPresetIdOrderByPosition(req.presetId());
-            log.info("PRESET ITEMS FOUND: {} for presetId={}", presetItems.size(), req.presetId());
             List<Item> items = new java.util.ArrayList<>();
             for (PresetItem pi : presetItems) {
                 Item item = new Item();
@@ -76,7 +70,6 @@ public class ListController {
             }
             itemRepository.saveAll(items);
             itemCount = items.size();
-            log.info("SAVED {} items for list={}", itemCount, list.getId());
         }
 
         return ListResponse.fromWithCount(list, itemCount);

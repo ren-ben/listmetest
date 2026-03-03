@@ -26,14 +26,14 @@ const emojis = ['🛒', '🏠', '🎂', '🎁', '💊', '🐾', '🧹', '🍕', 
 watch(() => props.open, async (isOpen) => {
   if (isOpen) {
     name.value = ''
-    selectedEmoji.value = props.initialPresetEmoji ?? '🛒'
+    selectedEmoji.value = props.initialPresetEmoji || emojis[0]!
     selectedPresetId.value = props.initialPresetId ?? null
     selectedPresetName.value = props.initialPresetName ?? null
     await nextTick()
     inputRef.value?.focus()
     presetService.getAll().then(p => { presets.value = p }).catch(() => {})
   }
-})
+}, { immediate: true })
 
 function selectPreset(preset: Preset | null) {
   if (preset === null) {
