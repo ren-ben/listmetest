@@ -48,9 +48,13 @@ public class ListController {
         ListDevice ld = new ListDevice(list, device, "owner");
         list.getListDevices().add(ld);
 
-        // If a preset was specified, copy its items into the new list
+        list = listRepository.save(list);
+
+        // If a preset was specified, copy its items into the new list (saved explicitly)
+        int itemCount = 0;
         if (req.presetId() != null) {
             List<PresetItem> presetItems = presetItemRepository.findByPresetIdOrderByPosition(req.presetId());
+            List<Item> items = new java.util.ArrayList<>();
             for (PresetItem pi : presetItems) {
                 Item item = new Item();
                 item.setList(list);
@@ -62,12 +66,13 @@ public class ListController {
                 item.setPrice(pi.getPrice());
                 item.setImageUrl(pi.getImageUrl());
                 item.setCreatedByDevice(device);
-                list.getItems().add(item);
+                items.add(item);
             }
+            itemRepository.saveAll(items);
+            itemCount = items.size();
         }
 
-        list = listRepository.save(list);
-        return ListResponse.from(list);
+        return ListResponse.fromWithCount(list, itemCount);
     }
 
     @GetMapping

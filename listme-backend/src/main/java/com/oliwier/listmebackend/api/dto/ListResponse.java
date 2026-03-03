@@ -29,4 +29,18 @@ public record ListResponse(
                 list.getUpdatedAt()
         );
     }
+
+    public static ListResponse fromWithCount(ShoppingList list, int itemCount) {
+        return new ListResponse(
+                list.getId(),
+                list.getName(),
+                list.getEmoji(),
+                list.getShareToken(),
+                itemCount,
+                0,
+                list.getListDevices().size(),
+                list.getCreatedAt(),
+                list.getUpdatedAt()
+        );
+    }
 }
